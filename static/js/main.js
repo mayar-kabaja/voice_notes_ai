@@ -186,13 +186,24 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Validate file
-            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-                showToast('No File Selected', 'Please select an audio file first', 'warning');
+            let formData;
+
+            // Check if there's a recorded audio first
+            if (recordedBlob) {
+                // Use recorded audio
+                formData = new FormData();
+                const audioFile = new File([recordedBlob], `recording-${Date.now()}.webm`, {
+                    type: 'audio/webm'
+                });
+                formData.append('audio', audioFile);
+            } else if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                // Use uploaded file
+                formData = new FormData(uploadForm);
+            } else {
+                // No file or recording
+                showToast('No File Selected', 'Please record audio or select a file first', 'warning');
                 return;
             }
-
-            const formData = new FormData(uploadForm);
 
             // Disable submit button and show spinner
             if (submitBtn) {
@@ -226,6 +237,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     uploadForm.reset();
                     if (fileSelected) {
                         fileSelected.style.display = 'none';
+                    }
+
+                    // Clear recording if exists
+                    if (recordedBlob) {
+                        recordedBlob = null;
+                        audioChunks = [];
+                        if (audioPlayback) audioPlayback.src = '';
+                        if (audioPreview) audioPreview.style.display = 'none';
                     }
                 } else {
                     // Error from server
@@ -408,73 +427,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle form submission with recorded audio
-    if (uploadForm && recordBtn) {
-        uploadForm.addEventListener('submit', function(e) {
-            // If there's a recorded audio, use it instead of file input
-            if (recordedBlob && !fileInput.files.length) {
-                e.preventDefault();
-
-                const formData = new FormData();
-
-                // Create a File from the Blob with a timestamp filename
-                const audioFile = new File([recordedBlob], `recording-${Date.now()}.webm`, {
-                    type: 'audio/webm'
-                });
-
-                formData.append('audio', audioFile);
-
-                // Disable submit button and show spinner
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="btn-spinner"></span><span>Processing...</span>';
-                }
-
-                // Upload file via AJAX
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Success - show result in modal
-                        showResultModal(data.meeting_id);
-
-                        // Re-enable submit button
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<span>&#x1F680;</span><span>Process Audio</span>';
-                        }
-
-                        // Clear recording
-                        recordedBlob = null;
-                        audioChunks = [];
-                        audioPlayback.src = '';
-                        audioPreview.style.display = 'none';
-                    } else {
-                        // Error from server
-                        throw new Error(data.message || 'Upload failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Upload Failed', error.message || 'An error occurred during upload', 'error', 7000);
-
-                    // Re-enable submit button
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<span>&#x1F680;</span><span>Process Audio</span>';
-                    }
-                });
-            }
-        });
-    }
 
     // Add smooth animations on page load
     const sections = document.querySelectorAll('.upload-section, .result-section, .meeting-card');
