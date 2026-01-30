@@ -489,6 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Modal Functions
 let currentMeetingData = null;
+let originalModalSummary = null;
 
 function showResultModal(meetingId) {
     // Fetch meeting data
@@ -501,8 +502,10 @@ function showResultModal(meetingId) {
             document.getElementById('modalTranscript').textContent = data.transcript || 'Transcript not available';
             document.getElementById('modalSummary').textContent = data.summary || 'Summary not available';
 
+            // Store original summary for translation reset
+            originalModalSummary = data.summary || 'Summary not available';
+
             // Reset translation
-            document.getElementById('modalTranslationResult').style.display = 'none';
             document.getElementById('modalTargetLanguage').value = '';
 
             // Show modal
@@ -525,23 +528,27 @@ function closeResultModal() {
     currentMeetingData = null;
 }
 
-// Translation in Modal
-async function translateModalNotes() {
+// Translation in Modal - Auto translate on language selection
+async function translateModalSummary() {
     const select = document.getElementById('modalTargetLanguage');
     const targetLanguage = select.value;
+    const summaryContent = document.getElementById('modalSummary');
 
+    // If empty selection (back to "🌐 Translate"), restore original
     if (!targetLanguage) {
-        showToast('Language Required', 'Please select a target language', 'warning');
+        if (originalModalSummary) {
+            summaryContent.textContent = originalModalSummary;
+        }
         return;
     }
 
-    const summary = document.getElementById('modalSummary').textContent;
-    const btn = document.getElementById('modalTranslateBtn');
-    const originalHTML = btn.innerHTML;
+    // Get the original summary text to translate
+    const textToTranslate = originalModalSummary || summaryContent.textContent;
 
     try {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="btn-spinner"></span><span>Translating...</span>';
+        // Show loading state
+        const originalContent = summaryContent.textContent;
+        summaryContent.textContent = '⏳ Translating to ' + targetLanguage + '...';
 
         const response = await fetch('/api/translate', {
             method: 'POST',
@@ -549,7 +556,7 @@ async function translateModalNotes() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                text: summary,
+                text: textToTranslate,
                 language: targetLanguage
             })
         });
@@ -557,22 +564,19 @@ async function translateModalNotes() {
         const data = await response.json();
 
         if (data.success) {
-            const resultDiv = document.getElementById('modalTranslationResult');
-            const contentDiv = document.getElementById('modalTranslatedContent');
-            contentDiv.textContent = data.translated_text;
-            resultDiv.style.display = 'block';
-
+            // Replace summary content with translated text
+            summaryContent.textContent = data.translated_text;
             showToast('Translation Complete', `Translated to ${targetLanguage}`, 'success');
-            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
+            summaryContent.textContent = originalContent;
             showToast('Translation Failed', data.message, 'error');
+            select.value = ''; // Reset selector
         }
     } catch (error) {
         console.error('Translation error:', error);
+        summaryContent.textContent = originalModalSummary || 'Translation failed';
         showToast('Translation Failed', 'An error occurred during translation', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
+        select.value = ''; // Reset selector
     }
 }
 

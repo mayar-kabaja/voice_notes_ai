@@ -99,16 +99,6 @@ def upload():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-@app.route('/result/<int:meeting_id>')
-def result(meeting_id):
-    """Display transcript and notes"""
-    meeting = Meeting.query.get_or_404(meeting_id)
-    return render_template('result.html',
-                         transcript=meeting.transcript,
-                         summary=meeting.summary,
-                         meeting=meeting)
-
-
 @app.route('/history')
 def history():
     """Display past meeting notes"""
@@ -160,4 +150,4 @@ with app.app_context():
 
 if __name__ == '__main__':
     # For local development only
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000)

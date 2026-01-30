@@ -94,38 +94,27 @@
             </div>
 
             <div class="notes">
-                <h3>&#x2728; AI-Generated Summary</h3>
+                <div class="summary-header">
+                    <h3>&#x2728; AI-Generated Summary</h3>
+                    <div class="translate-controls">
+                        <select id="modalTargetLanguage" class="language-select-inline" onchange="translateModalSummary()">
+                            <option value="">🌐 Translate</option>
+                            <option value="Spanish">🇪🇸 Spanish</option>
+                            <option value="French">🇫🇷 French</option>
+                            <option value="German">🇩🇪 German</option>
+                            <option value="Arabic">🇸🇦 Arabic</option>
+                            <option value="Chinese">🇨🇳 Chinese</option>
+                            <option value="Japanese">🇯🇵 Japanese</option>
+                            <option value="Korean">🇰🇷 Korean</option>
+                            <option value="Portuguese">🇵🇹 Portuguese</option>
+                            <option value="Russian">🇷🇺 Russian</option>
+                            <option value="Italian">🇮🇹 Italian</option>
+                            <option value="Hindi">🇮🇳 Hindi</option>
+                            <option value="Turkish">🇹🇷 Turkish</option>
+                        </select>
+                    </div>
+                </div>
                 <div id="modalSummary"></div>
-            </div>
-
-            <!-- Translation Options -->
-            <div class="translation-section">
-                <h3>&#x1F30D; Translate Notes</h3>
-                <div class="translation-controls">
-                    <select id="modalTargetLanguage" class="language-select">
-                        <option value="">Select Language...</option>
-                        <option value="Spanish">🇪🇸 Spanish</option>
-                        <option value="French">🇫🇷 French</option>
-                        <option value="German">🇩🇪 German</option>
-                        <option value="Arabic">🇸🇦 Arabic</option>
-                        <option value="Chinese">🇨🇳 Chinese</option>
-                        <option value="Japanese">🇯🇵 Japanese</option>
-                        <option value="Korean">🇰🇷 Korean</option>
-                        <option value="Portuguese">🇵🇹 Portuguese</option>
-                        <option value="Russian">🇷🇺 Russian</option>
-                        <option value="Italian">🇮🇹 Italian</option>
-                        <option value="Hindi">🇮🇳 Hindi</option>
-                        <option value="Turkish">🇹🇷 Turkish</option>
-                    </select>
-                    <button class="btn btn-translate" onclick="translateModalNotes()" id="modalTranslateBtn">
-                        <span>🌐</span>
-                        <span>Translate</span>
-                    </button>
-                </div>
-                <div id="modalTranslationResult" class="translation-result" style="display:none;">
-                    <h4>Translated Summary:</h4>
-                    <div id="modalTranslatedContent"></div>
-                </div>
             </div>
 
             <!-- Export Options -->

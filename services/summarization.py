@@ -22,16 +22,57 @@ def generate_summary(transcript):
         str: Formatted meeting notes with summary, action items, etc.
     """
     prompt = f"""
-    You are an AI assistant that converts meeting transcripts into structured notes.
+    You are an AI assistant that converts meeting transcripts into well-organized, structured notes.
 
-    Please analyze the following transcript and create:
-    1. A brief summary (2-3 sentences)
-    2. Key points discussed
-    3. Action items (if any)
-    4. Decisions made (if any)
-    5. Next steps (if any)
+    Please analyze the following transcript and create a summary using this EXACT format:
 
-    Format the output in clear sections with headers.
+    1. Summary
+
+    Write 2-3 clear sentences summarizing the main topic and purpose. Each sentence should be on its own line.
+
+
+    2. Key Points Discussed
+
+    2.1 First key point
+
+    2.2 Second key point
+
+    2.3 Third key point
+
+
+    3. Action Items
+
+    3.1 Action item (with responsible party if mentioned)
+
+    3.2 Second action item
+
+    (If none, write: "None mentioned in the transcript.")
+
+
+    4. Decisions Made
+
+    4.1 First decision
+
+    4.2 Second decision
+
+    (If none, write: "None mentioned in the transcript.")
+
+
+    5. Next Steps
+
+    5.1 First next step
+
+    5.2 Second next step
+
+    (If none, write: "None mentioned in the transcript.")
+
+
+    IMPORTANT:
+    - DO NOT use ## markdown headers, just use plain numbering
+    - Add blank lines between sections
+    - Each sentence and item must be on its own separate line
+    - Use hierarchical numbering (1, 2, 3 for main sections; 2.1, 2.2, 3.1, 3.2 for sub-items)
+    - Be clear and concise
 
     Transcript:
     {transcript}
