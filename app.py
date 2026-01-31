@@ -389,6 +389,61 @@ def get_videos():
     return jsonify([video.to_dict() for video in videos])
 
 
+# ============== CONVERSATIONAL AI ==============
+
+@app.route('/api/chat', methods=['POST'])
+def chat_conversation():
+    """Handle conversational AI messages"""
+    try:
+        data = request.get_json()
+        user_message = data.get('message', '').strip()
+        context_type = data.get('context_type')  # 'audio', 'video', 'book'
+        context_id = data.get('context_id')  # meeting_id, video_id, book_id
+
+        if not user_message:
+            return jsonify({'success': False, 'message': 'No message provided'}), 400
+
+        # Get context if provided
+        context_summary = None
+        context_transcript = None
+
+        if context_id and context_type:
+            if context_type == 'audio':
+                meeting = Meeting.query.get(context_id)
+                if meeting:
+                    context_summary = meeting.summary
+                    context_transcript = meeting.transcript
+            elif context_type == 'video':
+                video = Video.query.get(context_id)
+                if video:
+                    context_summary = video.summary
+                    context_transcript = video.transcript
+            elif context_type == 'book':
+                book = Book.query.get(context_id)
+                if book:
+                    context_summary = book.summary
+                    context_transcript = book.full_text
+
+        # Build conversation prompt
+        from services.summarization import chat_with_context
+
+        ai_response = chat_with_context(
+            user_message=user_message,
+            summary=context_summary,
+            transcript=context_transcript
+        )
+
+        return jsonify({
+            'success': True,
+            'response': ai_response
+        })
+
+    except Exception as e:
+        import traceback
+        print(f"Chat error: {e}\n{traceback.format_exc()}", flush=True)
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 # Initialize database tables
 with app.app_context():
     db.create_all()

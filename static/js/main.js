@@ -45,8 +45,12 @@ let audioContext;
 // Initialize Audio Context
 function initAudioContext() {
     if (!audioContext) {
-        // @ts-ignore - webkitAudioContext needed for Safari compatibility
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // @ts-ignore - audioContext is a custom property we add to window
+        // Reuse existing audio context if available
+        // @ts-ignore - webkitAudioContext for Safari
+        audioContext = window.audioContext || new (window.AudioContext || window.webkitAudioContext)();
+        // @ts-ignore
+        window.audioContext = audioContext; // Store globally to avoid conflicts
     }
 }
 
@@ -74,6 +78,12 @@ function playClickSound() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if this is the chat interface (skip if chat interface detected)
+    if (document.getElementById('chatFileInput')) {
+        console.log('Chat interface detected, skipping main.js initialization');
+        return;
+    }
+
     // Elements
     const fileInput = document.getElementById('audioFile');
     const bookFileInput = document.getElementById('bookFile');

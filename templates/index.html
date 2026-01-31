@@ -36,21 +36,75 @@
 
     <!-- Chat Input Area -->
     <div class="chat-input-area">
-        <form id="chatForm" enctype="multipart/form-data">
-            <!-- Drop Zone for Files -->
-            <div class="chat-drop-zone" id="chatDropZone">
-                <div class="drop-zone-content">
-                    <div class="drop-icon">📎</div>
-                    <p class="drop-text">Drop your file here</p>
-                    <p class="drop-hint">or click to browse</p>
-                    <p class="drop-formats">Audio • Video • Books • Documents</p>
+        <form id="chatForm" enctype="multipart/form-data" onsubmit="return false;">
+            <!-- Recording Interface (Inline) -->
+            <div class="inline-recording" id="inlineRecording" style="display: none;">
+                <div class="recording-content">
+                    <div class="recording-header">
+                        <span class="recording-icon">🎙️</span>
+                        <span class="recording-title">Recording...</span>
+                        <button type="button" class="close-recording" id="closeInlineRecording">✕</button>
+                    </div>
+
+                    <div class="recording-body">
+                        <div class="recording-timer" id="inlineRecordingTimer">
+                            <span class="timer-display" id="inlineTimerDisplay">00:00</span>
+                        </div>
+
+                        <div class="recording-controls">
+                            <button type="button" class="rec-btn rec-start" id="inlineStartRecordBtn">
+                                <span>⏺</span>
+                                <span>Start</span>
+                            </button>
+                            <button type="button" class="rec-btn rec-stop" id="inlineStopRecordBtn" style="display: none;">
+                                <span>⏹</span>
+                                <span>Stop</span>
+                            </button>
+                        </div>
+
+                        <div class="recording-preview" id="inlineAudioPreview" style="display: none;">
+                            <audio controls id="inlineAudioPlayback" class="audio-playback"></audio>
+                            <div class="preview-actions">
+                                <button type="button" class="rec-btn rec-use" id="inlineUseRecordingBtn">
+                                    <span>✓</span>
+                                    <span>Use Recording</span>
+                                </button>
+                                <button type="button" class="rec-btn rec-discard" id="inlineDiscardRecordingBtn">
+                                    <span>🗑️</span>
+                                    <span>Discard</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Input (Default) -->
+            <div class="chat-text-input" id="chatTextInput">
+                <!-- Action Icons (Left side) -->
+                <div class="input-actions-left">
+                    <button type="button" class="input-action-icon" id="recordAudioBtn" title="Record Audio">
+                        🎙️
+                    </button>
+                    <button type="button" class="input-action-icon" id="uploadFileBtn" title="Upload File">
+                        📁
+                    </button>
+                    <button type="button" class="input-action-icon" id="youtubeBtn" title="YouTube URL">
+                        🎬
+                    </button>
                 </div>
 
-                <!-- Hidden File Inputs -->
-                <input type="file" id="chatFileInput" name="file"
-                       accept="audio/*,video/*,.pdf,.epub,.txt,.docx,.doc,.mp3,.wav,.m4a,.ogg,.flac,.webm,.opus,.mp4,.mov,.avi,.mkv"
-                       class="file-input" style="display: none;">
+                <input type="text" id="userMessageInput" placeholder="Type your message..." class="text-input-field" autocomplete="off">
+
+                <button type="button" class="send-btn" id="sendMessageBtn" title="Send message">
+                    <span>➤</span>
+                </button>
             </div>
+
+            <!-- Hidden File Input (for programmatic file selection) -->
+            <input type="file" id="chatFileInput" name="file"
+                   accept="audio/*,video/*,.pdf,.epub,.txt,.docx,.doc,.mp3,.wav,.m4a,.ogg,.flac,.webm,.opus,.mp4,.mov,.avi,.mkv"
+                   class="file-input" style="display: none;">
 
             <!-- URL Input for YouTube -->
             <div class="chat-url-input" id="chatUrlInput" style="display: none;">
@@ -58,25 +112,12 @@
                 <button type="button" class="url-submit-btn" id="submitUrl">Send</button>
                 <button type="button" class="url-cancel-btn" id="cancelUrl">✕</button>
             </div>
-
-            <!-- Quick Actions -->
-            <div class="chat-quick-actions">
-                <button type="button" class="quick-action-btn" id="recordAudioBtn" title="Record Audio">
-                    🎙️ <span>Record</span>
-                </button>
-                <button type="button" class="quick-action-btn" id="uploadFileBtn" title="Upload File">
-                    📁 <span>Upload</span>
-                </button>
-                <button type="button" class="quick-action-btn" id="youtubeBtn" title="YouTube URL">
-                    🎬 <span>YouTube</span>
-                </button>
-            </div>
         </form>
     </div>
 </div>
 
-<!-- Recording Modal -->
-<div id="recordingModal" class="modal">
+<!-- Recording Modal (Deprecated - Now using inline recording) -->
+<div id="recordingModal" class="modal" style="display: none !important;">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
             <h2>

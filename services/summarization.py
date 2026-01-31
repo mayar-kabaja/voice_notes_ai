@@ -26,12 +26,12 @@ def generate_summary(transcript):
 
     Please analyze the following transcript and create a summary using this EXACT format:
 
-    1. Summary
+    📝 1. Summary
 
     Write 2-3 clear sentences summarizing the main topic and purpose. Each sentence should be on its own line.
 
 
-    2. Key Points Discussed
+    🔑 2. Key Points Discussed
 
     2.1 First key point
 
@@ -40,7 +40,7 @@ def generate_summary(transcript):
     2.3 Third key point
 
 
-    3. Action Items
+    ✅ 3. Action Items
 
     3.1 Action item (with responsible party if mentioned)
 
@@ -49,7 +49,7 @@ def generate_summary(transcript):
     (If none, write: "None mentioned in the transcript.")
 
 
-    4. Decisions Made
+    💡 4. Decisions Made
 
     4.1 First decision
 
@@ -58,7 +58,7 @@ def generate_summary(transcript):
     (If none, write: "None mentioned in the transcript.")
 
 
-    5. Next Steps
+    ⏭️ 5. Next Steps
 
     5.1 First next step
 
@@ -68,7 +68,8 @@ def generate_summary(transcript):
 
 
     IMPORTANT:
-    - DO NOT use ## markdown headers, just use plain numbering
+    - Use the emojis shown above before each main section number
+    - DO NOT use ## markdown headers, just use the emoji + plain numbering
     - Add blank lines between sections
     - Each sentence and item must be on its own separate line
     - Use hierarchical numbering (1, 2, 3 for main sections; 2.1, 2.2, 3.1, 3.2 for sub-items)
@@ -190,14 +191,14 @@ def summarize_book(book_text, max_length=10000):
 
     Please provide:
 
-    1. SUMMARY
+    📖 1. SUMMARY
     Write 3-5 paragraphs that capture the main themes, arguments, and key ideas of the book.
 
-    2. KEY POINTS
+    🔑 2. KEY POINTS
     List 8-12 of the most important points, insights, or lessons from the book.
     Format each as: "• Point description"
 
-    3. MAIN TAKEAWAYS
+    💡 3. MAIN TAKEAWAYS
     Provide 3-5 actionable takeaways or lessons readers should remember.
 
     Keep the language clear and accessible.
@@ -221,4 +222,69 @@ def summarize_book(book_text, max_length=10000):
         return result
     except Exception as e:
         print(f"Book summarization error: {e}")
+        raise
+
+def chat_with_context(user_message, summary=None, transcript=None):
+    """
+    Handle conversational AI with context from processed content
+    
+    Args:
+        user_message (str): User's message/question
+        summary (str): Summary of processed content (optional)
+        transcript (str): Full transcript/text (optional)
+        
+    Returns:
+        str: AI's response
+    """
+    # Build context for AI
+    context = ""
+    if summary:
+        context += f"Content Summary:\n{summary}\n\n"
+    if transcript:
+        # Truncate transcript if too long
+        max_transcript_length = 5000
+        if len(transcript) > max_transcript_length:
+            transcript = transcript[:max_transcript_length] + "..."
+        context += f"Full Content:\n{transcript}\n\n"
+    
+    if context:
+        system_prompt = """You are NoteFlow AI, a helpful assistant that helps users understand and work with their content.
+You have access to the user's recently processed content (audio transcripts, book summaries, or video summaries).
+Your job is to:
+- Answer questions about the content
+- Provide summaries in different formats (shorter, bullet points, etc.)
+- Extract specific information (action items, key points, dates, etc.)
+- Translate or rephrase content
+- Help users understand and utilize their content
+
+Be concise, helpful, and friendly. Use emojis occasionally to be engaging."""
+
+        prompt = f"{context}User request: {user_message}"
+    else:
+        # No context - general conversation
+        system_prompt = """You are NoteFlow AI, a helpful assistant for note-taking and content processing.
+Help users with:
+- Questions about NoteFlow AI features
+- General questions about content summarization
+- Tips on how to use the app effectively
+
+Be concise, helpful, and friendly."""
+        
+        prompt = user_message
+    
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
+        )
+        
+        ai_response = response.choices[0].message.content
+        return ai_response
+    except Exception as e:
+        print(f"Chat error: {e}")
         raise
