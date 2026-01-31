@@ -81,24 +81,27 @@
 
             <!-- Text Input (Default) -->
             <div class="chat-text-input" id="chatTextInput">
-                <!-- Action Icons (Left side) -->
-                <div class="input-actions-left">
-                    <button type="button" class="input-action-icon" id="recordAudioBtn" title="Record Audio">
-                        🎙️
-                    </button>
-                    <button type="button" class="input-action-icon" id="uploadFileBtn" title="Upload File">
-                        📁
-                    </button>
-                    <button type="button" class="input-action-icon" id="youtubeBtn" title="YouTube URL">
-                        🎬
+                <!-- Input wrapper with icons inside -->
+                <div class="input-wrapper">
+                    <!-- Icons inside input (left side) -->
+                    <div class="input-icons-inside">
+                        <button type="button" class="input-icon-btn" id="recordAudioBtn" title="Record Audio">
+                            🎙️
+                        </button>
+                        <button type="button" class="input-icon-btn" id="uploadFileBtn" title="Upload File">
+                            📁
+                        </button>
+                        <button type="button" class="input-icon-btn" id="youtubeBtn" title="YouTube URL">
+                            🎬
+                        </button>
+                    </div>
+
+                    <input type="text" id="userMessageInput" placeholder="Type your message..." class="text-input-field" autocomplete="off">
+
+                    <button type="button" class="send-btn" id="sendMessageBtn" title="Send message">
+                        <span>➤</span>
                     </button>
                 </div>
-
-                <input type="text" id="userMessageInput" placeholder="Type your message..." class="text-input-field" autocomplete="off">
-
-                <button type="button" class="send-btn" id="sendMessageBtn" title="Send message">
-                    <span>➤</span>
-                </button>
             </div>
 
             <!-- Hidden File Input (for programmatic file selection) -->

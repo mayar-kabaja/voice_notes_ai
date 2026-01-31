@@ -2636,24 +2636,40 @@ footer {
     /* No border/shadow since container is transparent */
 }
 
-/* Input action icons (left side) */
-.input-actions-left {
+/* Input wrapper with icons inside */
+.input-wrapper {
     display: flex;
-    gap: 2px;
     align-items: center;
-    padding-left: 2px;
+    gap: 8px;
+    background: var(--surface-elevated);
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
+    padding: 6px 12px;
+    transition: all 0.25s ease;
+    width: 100%;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Icons inside the input field */
+.input-icons-inside {
+    display: flex;
+    gap: 4px;
+    align-items: center;
     padding-right: 8px;
-    margin-right: 8px;
     border-right: 1px solid rgba(64, 64, 64, 0.3);
 }
 
-.input-action-icon {
-    width: 38px;
-    height: 38px;
+.input-icon-btn {
+    width: 32px;
+    height: 32px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
-    font-size: 1.35rem;
+    font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 50%;
@@ -2663,23 +2679,22 @@ footer {
     padding: 0;
 }
 
-.input-action-icon:hover {
+.input-icon-btn:hover {
     background: rgba(59, 130, 246, 0.15);
     color: var(--primary-light);
-    transform: scale(1.08);
+    transform: scale(1.1);
 }
 
-.input-action-icon:active {
-    transform: scale(0.92);
+.input-icon-btn:active {
+    transform: scale(0.95);
     background: rgba(59, 130, 246, 0.2);
 }
 
 .text-input-field {
     flex: 1;
-    padding: 12px 20px;
-    background: var(--surface-elevated);
-    border: 2px solid var(--border-color);
-    border-radius: 24px;
+    padding: 8px 4px;
+    background: transparent;
+    border: none;
     color: var(--text-primary);
     font-family: 'Poppins', sans-serif;
     font-size: 0.95rem;
@@ -2689,8 +2704,6 @@ footer {
 
 .text-input-field:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .text-input-field::placeholder {
@@ -2699,13 +2712,13 @@ footer {
 }
 
 .send-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     border: none;
     color: white;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -2854,27 +2867,31 @@ footer {
         gap: 8px;
     }
 
-    .input-actions-left {
-        gap: 0;
-        padding-right: 6px;
-        margin-right: 6px;
+    .input-wrapper {
+        padding: 4px 8px;
+        gap: 6px;
     }
 
-    .input-action-icon {
-        width: 34px;
-        height: 34px;
-        font-size: 1.25rem;
+    .input-icons-inside {
+        gap: 2px;
+        padding-right: 6px;
+    }
+
+    .input-icon-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 1.1rem;
     }
 
     .text-input-field {
-        padding: 10px 12px;
+        padding: 8px 4px;
         font-size: 16px; /* Prevent zoom on iOS */
     }
 
     .send-btn {
-        width: 38px;
-        height: 38px;
-        font-size: 1rem;
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
     }
 
     /* Inline recording mobile */
@@ -3050,27 +3067,31 @@ footer {
         gap: 6px;
     }
 
-    .input-actions-left {
-        gap: 0;
-        padding-right: 4px;
-        margin-right: 4px;
+    .input-wrapper {
+        padding: 3px 6px;
+        gap: 4px;
     }
 
-    .input-action-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 1.15rem;
+    .input-icons-inside {
+        gap: 0;
+        padding-right: 4px;
+    }
+
+    .input-icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
     }
 
     .text-input-field {
-        padding: 8px 10px;
+        padding: 6px 4px;
         font-size: 16px;
     }
 
     .send-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 0.95rem;
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
     }
 
     /* Drop zone more compact */

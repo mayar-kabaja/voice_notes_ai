@@ -3,12 +3,51 @@ AI summarization service for meeting notes using Groq
 """
 from openai import OpenAI
 from config import Config
+import re
 
 # Groq uses OpenAI-compatible API
 client = OpenAI(
     api_key=Config.GROQ_API_KEY,
     base_url="https://api.groq.com/openai/v1"
 )
+
+
+def format_api_error(error):
+    """
+    Format API errors into user-friendly messages
+
+    Args:
+        error: Exception from API call
+
+    Returns:
+        str: User-friendly error message
+    """
+    error_str = str(error)
+
+    # Check for rate limit error
+    if 'rate_limit' in error_str.lower() or '429' in error_str:
+        # Extract wait time if available
+        wait_time_match = re.search(r'try again in (\d+)m', error_str)
+        if wait_time_match:
+            minutes = wait_time_match.group(1)
+            return f"⏳ Rate limit reached. Please try again in {minutes} minutes. You can upgrade your plan at https://console.groq.com/settings/billing for higher limits."
+        else:
+            return "⏳ Rate limit reached. Please wait a few minutes and try again, or upgrade your plan for higher limits."
+
+    # Check for quota/billing errors
+    if 'quota' in error_str.lower() or 'insufficient' in error_str.lower():
+        return "💳 API quota exceeded. Please check your billing at https://console.groq.com/settings/billing"
+
+    # Check for authentication errors
+    if 'auth' in error_str.lower() or '401' in error_str or '403' in error_str:
+        return "🔑 Authentication error. Please check your API key configuration."
+
+    # Check for timeout errors
+    if 'timeout' in error_str.lower():
+        return "⏱️ Request timed out. Please try again."
+
+    # Generic error
+    return f"❌ An error occurred: {error_str[:200]}"
 
 
 def generate_summary(transcript):
@@ -94,7 +133,8 @@ def generate_summary(transcript):
         return summary
     except Exception as e:
         print(f"Summarization error: {e}")
-        raise
+        friendly_error = format_api_error(e)
+        raise Exception(friendly_error)
 
 
 def translate_text(text, target_language):
@@ -132,7 +172,8 @@ def translate_text(text, target_language):
         return translation
     except Exception as e:
         print(f"Translation error: {e}")
-        raise
+        friendly_error = format_api_error(e)
+        raise Exception(friendly_error)
 
 
 def extract_action_items(transcript):
@@ -168,7 +209,8 @@ def extract_action_items(transcript):
         return action_items
     except Exception as e:
         print(f"Action item extraction error: {e}")
-        raise
+        friendly_error = format_api_error(e)
+        raise Exception(friendly_error)
 
 
 def summarize_book(book_text, max_length=10000):
@@ -222,7 +264,8 @@ def summarize_book(book_text, max_length=10000):
         return result
     except Exception as e:
         print(f"Book summarization error: {e}")
-        raise
+        friendly_error = format_api_error(e)
+        raise Exception(friendly_error)
 
 def chat_with_context(user_message, summary=None, transcript=None):
     """
@@ -287,4 +330,5 @@ Be concise, helpful, and friendly."""
         return ai_response
     except Exception as e:
         print(f"Chat error: {e}")
-        raise
+        friendly_error = format_api_error(e)
+        raise Exception(friendly_error)
