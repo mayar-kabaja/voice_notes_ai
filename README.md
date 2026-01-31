@@ -1,22 +1,32 @@
-# VoiceNotes AI
+# NoteFlow AI
 
-**Transform your voice recordings into structured meeting notes with AI-powered transcription and summarization.**
+**Transform voice recordings, books, and videos into structured notes with AI-powered summarization.**
 
-A modern web application that automatically converts audio recordings into organized meeting notes, complete with AI-generated summaries and multi-language translation support.
+A modern web application that automatically converts audio recordings, books, and videos into organized notes and summaries, complete with AI-generated insights and multi-language translation support.
 
 ---
 
 ## Features
 
+### Voice Notes
 - **Audio Recording**: Record audio directly from your browser with real-time timer
 - **File Upload**: Drag-and-drop or browse to upload audio files (MP3, WAV, M4A, OGG, FLAC, WebM, OPUS)
 - **AI Transcription**: Automatic speech-to-text conversion using AssemblyAI
 - **Smart Summarization**: AI-powered meeting notes generation using OpenAI GPT
+- **Meeting History**: View and access all past meeting notes
+
+### Book Summarization (NEW!)
+- **Multiple Format Support**: Upload PDF, EPUB, TXT, or DOCX files
+- **AI-Powered Summaries**: Get comprehensive summaries with key points and takeaways
+- **Book History**: Access all previously summarized books
+- **Smart Text Extraction**: Automatically extract text from various book formats
+
+### General Features
 - **Multi-Language Translation**: Translate summaries to 12+ languages including Spanish, French, German, Arabic, Chinese, Japanese, and more
 - **Export Options**: Download notes as TXT or Markdown, or copy to clipboard
-- **Meeting History**: View and access all past meeting notes
 - **Responsive Design**: Beautiful UI that works on desktop and mobile devices
 - **Real-time Feedback**: Toast notifications and loading states for better UX
+- **Modal Interface**: Quick access to results without page reloads
 
 ---
 
@@ -53,8 +63,8 @@ A modern web application that automatically converts audio recordings into organ
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/voice_notes_ai.git
-cd voice_notes_ai
+git clone https://github.com/yourusername/noteflow-ai.git
+cd noteflow-ai
 ```
 
 ### 2. Create Virtual Environment
@@ -112,6 +122,7 @@ Edit `config.py` to customize settings:
 UPLOAD_FOLDER = 'static/uploads'
 MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB max file size
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'm4a', 'ogg', 'flac', 'webm', 'opus'}
+ALLOWED_BOOK_EXTENSIONS = {'pdf', 'epub', 'txt', 'docx', 'doc'}
 
 # Database settings
 SQLALCHEMY_DATABASE_URI = 'sqlite:///noteflow.db'
@@ -143,6 +154,17 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///noteflow.db'
 ### Accessing History
 - Click "View History" to see all past meeting notes
 - Click on any meeting to view its details
+
+### Summarizing Books
+1. Navigate to the "Books" section from the header navigation
+2. Drag and drop a book file (PDF, EPUB, TXT, or DOCX)
+3. Click "Summarize Book" to begin processing
+4. View your comprehensive AI-generated summary in the modal
+5. Translate, export, or copy the summary as needed
+
+### Viewing Book History
+- Click "View Book History" to see all previously summarized books
+- Click on any book card to view its summary again
 
 ---
 
@@ -214,7 +236,7 @@ Response:
 ## Project Structure
 
 ```
-voice_notes_ai/
+noteflow-ai/
 ├── app.py                  # Main Flask application
 ├── config.py               # Configuration settings
 ├── wsgi.py                 # WSGI entry point
@@ -222,15 +244,18 @@ voice_notes_ai/
 ├── .env.example           # Environment variables template
 ├── models/
 │   ├── __init__.py
-│   └── meeting.py         # Database models
+│   └── meeting.py         # Database models (Meeting & Book)
 ├── services/
 │   ├── __init__.py
 │   ├── transcription.py   # AssemblyAI integration
-│   └── summarization.py   # OpenAI integration
+│   ├── summarization.py   # AI summarization (Groq)
+│   └── book_extraction.py # Book text extraction (PDF/EPUB/DOCX/TXT)
 ├── templates/
-│   ├── base.html          # Base template
-│   ├── index.html         # Homepage with upload form and result modal
-│   └── history.html       # Meeting history
+│   ├── base.html          # Base template with navigation
+│   ├── index.html         # Voice notes upload & modal
+│   ├── history.html       # Meeting history
+│   ├── books.html         # Book upload & modal
+│   └── books_history.html # Book summary history
 ├── static/
 │   ├── css/
 │   │   └── style.css      # Styles
@@ -282,8 +307,15 @@ Audio recording requires HTTPS or localhost for security reasons.
 
 ### File Upload Errors
 - Maximum file size is 100MB
-- Supported formats: MP3, WAV, M4A, OGG, FLAC, WebM, OPUS
+- **Audio formats**: MP3, WAV, M4A, OGG, FLAC, WebM, OPUS
+- **Book formats**: PDF, EPUB, TXT, DOCX, DOC
 - Clear browser cache if issues persist
+
+### Book Processing Issues
+- Large books may take longer to process (30-60 seconds)
+- If text extraction fails, try converting to PDF first
+- Scanned PDFs (images) won't work - text must be selectable
+- EPUB files should be standard format (not DRM-protected)
 
 ---
 
@@ -324,4 +356,4 @@ Built with ❤️ using Flask, OpenAI, and AssemblyAI
 
 ## Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/yourusername/voice_notes_ai/issues) on GitHub.
+If you encounter any issues or have questions, please [open an issue](https://github.com/yourusername/noteflow-ai/issues) on GitHub.
