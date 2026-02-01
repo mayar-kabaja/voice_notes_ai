@@ -101,15 +101,15 @@
 
             <!-- Export Options -->
             <div class="export-options">
-                <button class="btn btn-export export-btn" onclick="exportBookAsText()">
+                <button class="btn btn-export export-btn" onclick="exportBookAsText()" title="Download summary as a plain text file">
                     <span>📥</span>
                     <span>Export as TXT</span>
                 </button>
-                <button class="btn btn-export export-btn" onclick="exportBookAsMarkdown()">
+                <button class="btn btn-export export-btn" onclick="exportBookAsMarkdown()" title="Download summary as a Markdown file">
                     <span>📄</span>
                     <span>Export as Markdown</span>
                 </button>
-                <button class="btn btn-secondary export-btn" onclick="copyBookToClipboard()">
+                <button class="btn btn-secondary export-btn" onclick="copyBookToClipboard()" title="Copy summary to your clipboard">
                     <span>📋</span>
                     <span>Copy to Clipboard</span>
                 </button>
@@ -216,7 +216,9 @@ async function translateBookSummary() {
 function exportBookAsText() {
     if (!currentBookData) return;
 
-    const content = `BOOK: ${currentBookData.title}\n\n\nSUMMARY:\n\n${currentBookData.summary}`;
+    // Get the currently displayed summary (which may be translated)
+    const displayedSummary = document.getElementById('modalSummary').textContent;
+    const content = `BOOK: ${currentBookData.title}\n\n\nSUMMARY:\n\n${displayedSummary}`;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -234,7 +236,9 @@ function exportBookAsText() {
 function exportBookAsMarkdown() {
     if (!currentBookData) return;
 
-    const content = `# ${currentBookData.title}\n\n## Summary\n\n${currentBookData.summary}`;
+    // Get the currently displayed summary (which may be translated)
+    const displayedSummary = document.getElementById('modalSummary').textContent;
+    const content = `# ${currentBookData.title}\n\n## Summary\n\n${displayedSummary}`;
 
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -252,7 +256,9 @@ function exportBookAsMarkdown() {
 function copyBookToClipboard() {
     if (!currentBookData) return;
 
-    const content = `BOOK: ${currentBookData.title}\n\n\nSUMMARY:\n\n${currentBookData.summary}`;
+    // Get the currently displayed summary (which may be translated)
+    const displayedSummary = document.getElementById('modalSummary').textContent;
+    const content = `BOOK: ${currentBookData.title}\n\n\nSUMMARY:\n\n${displayedSummary}`;
 
     navigator.clipboard.writeText(content).then(() => {
         showToast('Copied', 'Book summary copied to clipboard', 'success', 2000);

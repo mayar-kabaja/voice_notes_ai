@@ -3438,3 +3438,81 @@ footer {
         font-size: 0.8rem;
     }
 }
+
+/* ===================================
+   CUSTOM TOOLTIPS
+   =================================== */
+
+/* Enhance default browser tooltips with better styling */
+button[title],
+.btn[title],
+a[title] {
+    position: relative;
+}
+
+/* Custom tooltip styling for buttons */
+button[title]:hover::before,
+.btn[title]:hover::before,
+a[title]:hover::before {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(38, 38, 38, 0.98);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s ease-out forwards;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(64, 64, 64, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+/* Tooltip arrow */
+button[title]:hover::after,
+.btn[title]:hover::after,
+a[title]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(38, 38, 38, 0.98);
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltipFadeIn 0.2s ease-out forwards;
+}
+
+/* Animation for tooltip appearance */
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Special handling for tooltips that might overflow on mobile */
+@media (max-width: 768px) {
+    button[title]:hover::before,
+    .btn[title]:hover::before,
+    a[title]:hover::before {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+        max-width: 200px;
+        white-space: normal;
+        text-align: center;
+    }
+}

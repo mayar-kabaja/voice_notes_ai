@@ -892,14 +892,17 @@ function exportModalAsText() {
     let content = '';
     let filename = '';
 
+    // Get the currently displayed summary (which may be translated)
+    const displayedSummary = document.getElementById('modalSummary').textContent;
+
     if (currentVideoData) {
-        content = `VIDEO: ${currentVideoData.title}\nURL: ${currentVideoData.video_url}\n\nTRANSCRIPT:\n\n${currentVideoData.transcript}\n\n\nSUMMARY:\n\n${currentVideoData.summary}`;
+        content = `VIDEO: ${currentVideoData.title}\nURL: ${currentVideoData.video_url}\n\nTRANSCRIPT:\n\n${currentVideoData.transcript}\n\n\nSUMMARY:\n\n${displayedSummary}`;
         filename = `video-summary-${Date.now()}.txt`;
     } else if (currentBookData) {
-        content = `BOOK: ${currentBookData.title}\n\nSUMMARY:\n\n${currentBookData.summary}`;
+        content = `BOOK: ${currentBookData.title}\n\nSUMMARY:\n\n${displayedSummary}`;
         filename = `book-summary-${Date.now()}.txt`;
     } else if (currentMeetingData) {
-        content = `TRANSCRIPT:\n\n${currentMeetingData.transcript}\n\n\nSUMMARY:\n\n${currentMeetingData.summary}`;
+        content = `TRANSCRIPT:\n\n${currentMeetingData.transcript}\n\n\nSUMMARY:\n\n${displayedSummary}`;
         filename = `meeting-notes-${Date.now()}.txt`;
     } else {
         return;
@@ -923,14 +926,17 @@ function exportModalAsMarkdown() {
     let content = '';
     let filename = '';
 
+    // Get the currently displayed summary (which may be translated)
+    const displayedSummary = document.getElementById('modalSummary').textContent;
+
     if (currentVideoData) {
-        content = `# Video Summary\n\n**Title:** ${currentVideoData.title}\n**URL:** ${currentVideoData.video_url}\n\n## Transcript\n\n${currentVideoData.transcript}\n\n## AI-Generated Summary\n\n${currentVideoData.summary}`;
+        content = `# Video Summary\n\n**Title:** ${currentVideoData.title}\n**URL:** ${currentVideoData.video_url}\n\n## Transcript\n\n${currentVideoData.transcript}\n\n## AI-Generated Summary\n\n${displayedSummary}`;
         filename = `video-summary-${Date.now()}.md`;
     } else if (currentBookData) {
-        content = `# Book Summary\n\n**Title:** ${currentBookData.title}\n\n## Summary\n\n${currentBookData.summary}`;
+        content = `# Book Summary\n\n**Title:** ${currentBookData.title}\n\n## Summary\n\n${displayedSummary}`;
         filename = `book-summary-${Date.now()}.md`;
     } else if (currentMeetingData) {
-        content = `# Meeting Notes\n\n## Transcript\n\n${currentMeetingData.transcript}\n\n## AI-Generated Summary\n\n${currentMeetingData.summary}`;
+        content = `# Meeting Notes\n\n## Transcript\n\n${currentMeetingData.transcript}\n\n## AI-Generated Summary\n\n${displayedSummary}`;
         filename = `meeting-notes-${Date.now()}.md`;
     } else {
         return;
@@ -953,12 +959,15 @@ function exportModalAsMarkdown() {
 function copyModalToClipboard() {
     let content = '';
 
+    // Get the currently displayed summary (which may be translated)
+    const displayedSummary = document.getElementById('modalSummary').textContent;
+
     if (currentVideoData) {
-        content = `VIDEO: ${currentVideoData.title}\nURL: ${currentVideoData.video_url}\n\nTRANSCRIPT:\n\n${currentVideoData.transcript}\n\n\nSUMMARY:\n\n${currentVideoData.summary}`;
+        content = `VIDEO: ${currentVideoData.title}\nURL: ${currentVideoData.video_url}\n\nTRANSCRIPT:\n\n${currentVideoData.transcript}\n\n\nSUMMARY:\n\n${displayedSummary}`;
     } else if (currentBookData) {
-        content = `BOOK: ${currentBookData.title}\n\nSUMMARY:\n\n${currentBookData.summary}`;
+        content = `BOOK: ${currentBookData.title}\n\nSUMMARY:\n\n${displayedSummary}`;
     } else if (currentMeetingData) {
-        content = `TRANSCRIPT:\n\n${currentMeetingData.transcript}\n\n\nSUMMARY:\n\n${currentMeetingData.summary}`;
+        content = `TRANSCRIPT:\n\n${currentMeetingData.transcript}\n\n\nSUMMARY:\n\n${displayedSummary}`;
     } else {
         return;
     }
