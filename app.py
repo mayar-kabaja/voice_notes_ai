@@ -99,13 +99,6 @@ def upload():
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-@app.route('/history')
-def history():
-    """Display past meeting notes"""
-    meetings = Meeting.query.order_by(Meeting.created_at.desc()).all()
-    return render_template('history.html', meetings=meetings)
-
-
 @app.route('/api/meeting/<int:meeting_id>')
 def get_meeting(meeting_id):
     """API endpoint to get meeting data"""
@@ -200,13 +193,6 @@ def upload_book():
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
-
-
-@app.route('/books/history')
-def books_history():
-    """Display past book summaries"""
-    books = Book.query.order_by(Book.created_at.desc()).all()
-    return render_template('books_history.html', books=books)
 
 
 @app.route('/api/book/<int:book_id>')

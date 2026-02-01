@@ -13,12 +13,10 @@ A modern web application that automatically converts audio recordings, books, an
 - **File Upload**: Drag-and-drop or browse to upload audio files (MP3, WAV, M4A, OGG, FLAC, WebM, OPUS)
 - **AI Transcription**: Automatic speech-to-text conversion using AssemblyAI
 - **Smart Summarization**: AI-powered meeting notes generation using OpenAI GPT
-- **Meeting History**: View and access all past meeting notes
 
 ### Book Summarization
 - **Multiple Format Support**: Upload PDF, EPUB, TXT, or DOCX files
 - **AI-Powered Summaries**: Get comprehensive summaries with key points and takeaways
-- **Book History**: Access all previously summarized books
 - **Smart Text Extraction**: Automatically extract text from various book formats
 
 ### Video Summarization ⚡ OPTIMIZED!
@@ -159,20 +157,12 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///noteflow.db'
 - Copy to clipboard for easy sharing
 - All actions happen in the modal without page reloads
 
-### Accessing History
-- Click "View History" to see all past meeting notes
-- Click on any meeting to view its details
-
 ### Summarizing Books
 1. Navigate to the "Books" section from the header navigation
 2. Drag and drop a book file (PDF, EPUB, TXT, or DOCX)
 3. Click "Summarize Book" to begin processing
 4. View your comprehensive AI-generated summary in the modal
 5. Translate, export, or copy the summary as needed
-
-### Viewing Book History
-- Click "View Book History" to see all previously summarized books
-- Click on any book card to view its summary again
 
 ---
 
@@ -260,10 +250,8 @@ noteflow-ai/
 │   └── book_extraction.py # Book text extraction (PDF/EPUB/DOCX/TXT)
 ├── templates/
 │   ├── base.html          # Base template with navigation
-│   ├── index.html         # Voice notes upload & modal
-│   ├── history.html       # Meeting history
-│   ├── books.html         # Book upload & modal
-│   └── books_history.html # Book summary history
+│   ├── index.html         # Voice notes upload & chat
+│   └── books.html         # Book upload & modal
 ├── static/
 │   ├── css/
 │   │   └── style.css      # Styles
