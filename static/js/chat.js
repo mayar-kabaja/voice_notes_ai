@@ -46,7 +46,6 @@ function initAudioContext() {
         window.audioContext = ctx;
         return true;
     } catch (e) {
-        console.log('Audio not available:', e);
         return false;
     }
 }
@@ -131,8 +130,7 @@ function playSound(type) {
                 break;
         }
     } catch (error) {
-        // Silently fail if audio context isn't available - don't break buttons!
-        // console.log('Audio playback not available:', error);
+        // Silently fail if audio context isn't available
     }
 }
 
@@ -1083,51 +1081,33 @@ addResultMessage = function(data, type) {
 // Update file upload button behavior
 let uploadBtnClicked = false;
 uploadFileBtn.addEventListener('click', function(e) {
-    playSound('click'); // Play click sound
-    console.log('Upload button clicked');
+    playSound('click');
     e.preventDefault();
     e.stopPropagation();
 
-    if (uploadBtnClicked) {
-        console.log('Upload button already clicked, ignoring');
-        return; // Prevent double-click
-    }
+    if (uploadBtnClicked) return;
     uploadBtnClicked = true;
 
-    // Blur the button to prevent focus issues
     this.blur();
-
-    // Open file dialog
-    console.log('Opening file dialog via chatFileInput.click()');
     chatFileInput.click();
 
-    // Reset after delay
     setTimeout(() => {
         uploadBtnClicked = false;
-        console.log('Upload button reset');
     }, 1000);
 });
 
 // When file is selected, process it
 let isProcessingFile = false;
 chatFileInput.addEventListener('change', function(e) {
-    console.log('File input changed, files:', this.files.length);
-
-    if (isProcessingFile) {
-        console.log('Already processing, ignoring');
-        return; // Prevent duplicate processing
-    }
+    if (isProcessingFile) return;
 
     if (this.files.length > 0) {
         isProcessingFile = true;
-        console.log('Processing file:', this.files[0].name);
         handleFileSelection(this.files[0]);
 
-        // Reset after a delay
         setTimeout(() => {
             this.value = '';
             isProcessingFile = false;
-            console.log('File input reset');
         }, 500);
     }
 });
@@ -1161,8 +1141,6 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if (isMobile) {
-    console.log('Mobile device detected');
-
     // Prevent rubber-band scrolling on iOS
     if (isIOS) {
         document.body.style.overscrollBehavior = 'none';
@@ -1198,9 +1176,7 @@ if (isMobile) {
         const currentHeight = window.innerHeight;
         const diff = lastHeight - currentHeight;
 
-        // Keyboard opened (height decreased significantly)
         if (diff > 100) {
-            console.log('Keyboard opened');
             setTimeout(scrollToBottom, 300);
         }
 

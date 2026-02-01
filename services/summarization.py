@@ -132,7 +132,6 @@ def generate_summary(transcript):
         summary = response.choices[0].message.content
         return summary
     except Exception as e:
-        print(f"Summarization error: {e}")
         friendly_error = format_api_error(e)
         raise Exception(friendly_error)
 
@@ -171,7 +170,6 @@ def translate_text(text, target_language):
         translation = response.choices[0].message.content
         return translation
     except Exception as e:
-        print(f"Translation error: {e}")
         friendly_error = format_api_error(e)
         raise Exception(friendly_error)
 
@@ -208,7 +206,6 @@ def extract_action_items(transcript):
         action_items = response.choices[0].message.content
         return action_items
     except Exception as e:
-        print(f"Action item extraction error: {e}")
         friendly_error = format_api_error(e)
         raise Exception(friendly_error)
 
@@ -263,7 +260,6 @@ def summarize_book(book_text, max_length=10000):
         result = response.choices[0].message.content
         return result
     except Exception as e:
-        print(f"Book summarization error: {e}")
         friendly_error = format_api_error(e)
         raise Exception(friendly_error)
 
@@ -329,6 +325,5 @@ Be concise, helpful, and friendly."""
         ai_response = response.choices[0].message.content
         return ai_response
     except Exception as e:
-        print(f"Chat error: {e}")
         friendly_error = format_api_error(e)
         raise Exception(friendly_error)

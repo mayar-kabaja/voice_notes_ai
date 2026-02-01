@@ -66,9 +66,8 @@ def clean_old_files(directory, max_age_hours=24):
             if file_age > max_age_seconds:
                 try:
                     os.remove(filepath)
-                    print(f"Removed old file: {filename}")
-                except Exception as e:
-                    print(f"Error removing file {filename}: {e}")
+                except OSError:
+                    pass
 
 
 def format_duration(seconds):

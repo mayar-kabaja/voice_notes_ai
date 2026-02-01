@@ -37,12 +37,7 @@ def get_youtube_transcript(video_url):
         video_id = extract_video_id(video_url)
 
         if not video_id:
-            print(f"ERROR: Invalid YouTube URL: {video_url}", flush=True)
             raise ValueError("Invalid YouTube URL format")
-
-        print("=== YOUTUBE TRANSCRIPT REQUEST ===", flush=True)
-        print(f"Video ID: {video_id}", flush=True)
-        print(f"Full URL: {video_url}", flush=True)
 
         # Try multiple language options (including auto-generated)
         languages_to_try = [
@@ -65,15 +60,10 @@ def get_youtube_transcript(video_url):
 
         for languages in languages_to_try:
             try:
-                print(f"Trying languages: {languages}", flush=True)
-                # Use the correct API method
                 api_result = YouTubeTranscriptApi().fetch(video_id, languages=languages)
-                # Extract segments from the result
                 transcript_data = api_result.segments if hasattr(api_result, 'segments') else api_result
-                print(f"Successfully got transcript with {len(transcript_data)} segments", flush=True)
                 break
-            except TranscriptsDisabled as e:
-                print(f"ERROR: Transcripts disabled for video {video_id}", flush=True)
+            except TranscriptsDisabled:
                 return {
                     'success': False,
                     'error': "⚠️ This video has transcripts disabled.\n\n"
@@ -83,10 +73,8 @@ def get_youtube_transcript(video_url):
                 }
             except NoTranscriptFound as e:
                 last_error = e
-                print(f"No transcript found for {languages}", flush=True)
                 continue
-            except VideoUnavailable as e:
-                print(f"ERROR: Video {video_id} is unavailable", flush=True)
+            except VideoUnavailable:
                 return {
                     'success': False,
                     'error': "⚠️ This video is unavailable.\n\n"
@@ -98,13 +86,9 @@ def get_youtube_transcript(video_url):
                 }
             except Exception as e:
                 last_error = e
-                print(f"Error with {languages}: {type(e).__name__}: {str(e)}", flush=True)
                 continue
 
-        # If no transcript found after all attempts
         if not transcript_data:
-            error_msg = str(last_error) if last_error else "Unknown error"
-            print(f"ERROR: No transcripts available. Last error: {error_msg}", flush=True)
             return {
                 'success': False,
                 'error': "⚠️ No captions/transcripts available for this video.\n\n"
@@ -113,8 +97,6 @@ def get_youtube_transcript(video_url):
                          "2. Uploading the video file directly\n\n"
                          "💡 Most YouTube videos have auto-captions!"
             }
-
-        print(f"Processing {len(transcript_data)} transcript segments", flush=True)
 
         # Combine all text - handle both dict and object formats
         transcript_text = " ".join([
@@ -129,9 +111,6 @@ def get_youtube_transcript(video_url):
         }
 
     except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        print(f"Error getting YouTube transcript: {str(e)}\n{error_details}", flush=True)
         return {
             'success': False,
             'error': f"Could not retrieve transcript: {str(e)}"

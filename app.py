@@ -77,31 +77,17 @@ def upload():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # Step 1: Transcribe audio
-        print(f"Transcribing audio: {filename}", flush=True)
         transcript = transcribe_audio(filepath)
-        print(f"=== TRANSCRIPT ===", flush=True)
-        print(transcript, flush=True)
-        print(f"=== END TRANSCRIPT (length: {len(transcript)} chars) ===", flush=True)
-
-        # Step 2: Generate summary with AI
-        print(f"Generating summary...", flush=True)
         summary = generate_summary(transcript)
-        print(f"=== SUMMARY ===", flush=True)
-        print(summary, flush=True)
-        print(f"=== END SUMMARY ===", flush=True)
 
-        # Step 3: Save to database
         meeting = Meeting(
-            title=file.filename,  # Original filename as title
+            title=file.filename,
             audio_filename=filename,
             transcript=transcript,
             summary=summary
         )
         db.session.add(meeting)
         db.session.commit()
-
-        print(f"Meeting saved with ID: {meeting.id}")
 
         return jsonify({
             'success': True,
@@ -110,11 +96,6 @@ def upload():
         })
 
     except Exception as e:
-        import traceback
-        import sys
-        error_msg = f"Upload error: {e}\n{traceback.format_exc()}"
-        print(error_msg, file=sys.stderr, flush=True)
-        print(error_msg, flush=True)
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
@@ -157,7 +138,6 @@ def translate():
             'translated_text': translated_text
         })
     except Exception as e:
-        print(f"Translation error: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
@@ -198,23 +178,10 @@ def upload_book():
         # Get file extension
         file_type = file.filename.rsplit('.', 1)[1].lower()
 
-        # Step 1: Extract text from book
-        print(f"Extracting text from {file_type} file: {filename}", flush=True)
         full_text = extract_text_from_book(filepath, file_type)
-        print(f"=== EXTRACTED TEXT (length: {len(full_text)} chars) ===", flush=True)
-
-        # Step 2: Get book title
         book_title = get_book_title_from_text(full_text, file.filename)
-        print(f"Book title: {book_title}", flush=True)
-
-        # Step 3: Generate AI summary
-        print(f"Generating book summary...", flush=True)
         summary = summarize_book(full_text)
-        print(f"=== SUMMARY ===", flush=True)
-        print(summary, flush=True)
-        print(f"=== END SUMMARY ===", flush=True)
 
-        # Step 4: Save to database
         book = Book(
             title=book_title,
             book_filename=filename,
@@ -225,8 +192,6 @@ def upload_book():
         db.session.add(book)
         db.session.commit()
 
-        print(f"Book saved with ID: {book.id}")
-
         return jsonify({
             'success': True,
             'book_id': book.id,
@@ -234,11 +199,6 @@ def upload_book():
         })
 
     except Exception as e:
-        import traceback
-        import sys
-        error_msg = f"Book upload error: {e}\n{traceback.format_exc()}"
-        print(error_msg, file=sys.stderr, flush=True)
-        print(error_msg, flush=True)
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
@@ -290,26 +250,10 @@ def process_video():
 
             audio_filepath = None
             try:
-                # Step 1: Extract audio from video (MUCH FASTER than sending whole video!)
-                print(f"Extracting audio from video: {filename}", flush=True)
                 audio_filepath = extract_audio_from_video(video_filepath)
-                print(f"Audio extracted successfully!", flush=True)
-
-                # Step 2: Transcribe the extracted audio (faster and smaller file)
-                print(f"Transcribing extracted audio...", flush=True)
                 transcript = transcribe_audio(audio_filepath)
-                print(f"=== TRANSCRIPT ===", flush=True)
-                print(transcript, flush=True)
-                print(f"=== END TRANSCRIPT (length: {len(transcript)} chars) ===", flush=True)
-
-                # Step 3: Generate AI summary
-                print(f"Generating video summary...", flush=True)
                 summary = summarize_book(transcript)
-                print(f"=== SUMMARY ===", flush=True)
-                print(summary, flush=True)
-                print(f"=== END SUMMARY ===", flush=True)
 
-                # Step 4: Save to database
                 video = Video(
                     title=file.filename,  # Original filename as title
                     video_url=filename,  # Store filename in video_url field
@@ -319,8 +263,6 @@ def process_video():
                 )
                 db.session.add(video)
                 db.session.commit()
-
-                print(f"Video saved with ID: {video.id}")
 
                 return jsonify({
                     'success': True,
@@ -344,30 +286,15 @@ def process_video():
             if not video_url:
                 return jsonify({'success': False, 'message': 'No video URL provided'}), 400
 
-            # Step 1: Get transcript from YouTube
-            print(f"Fetching transcript for URL: {video_url}", flush=True)
             result = get_youtube_transcript(video_url)
-
             if not result['success']:
                 return jsonify({'success': False, 'message': f"Failed to get transcript: {result.get('error', 'Unknown error')}"}), 400
 
             transcript = result['transcript']
             video_id = result['video_id']
-
-            print(f"=== TRANSCRIPT (length: {len(transcript)} chars) ===", flush=True)
-
-            # Step 2: Get video title
             video_title = get_video_title_from_url(video_url)
-            print(f"Video title: {video_title}", flush=True)
+            summary = summarize_book(transcript)
 
-            # Step 3: Generate AI summary
-            print(f"Generating video summary...", flush=True)
-            summary = summarize_book(transcript)  # Reuse book summarization function
-            print(f"=== SUMMARY ===", flush=True)
-            print(summary, flush=True)
-            print(f"=== END SUMMARY ===", flush=True)
-
-            # Step 4: Save to database
             video = Video(
                 title=video_title,
                 video_url=video_url,
@@ -378,8 +305,6 @@ def process_video():
             db.session.add(video)
             db.session.commit()
 
-            print(f"Video saved with ID: {video.id}")
-
             return jsonify({
                 'success': True,
                 'video_id': video.id,
@@ -387,11 +312,6 @@ def process_video():
             })
 
     except Exception as e:
-        import traceback
-        import sys
-        error_msg = f"Video processing error: {e}\n{traceback.format_exc()}"
-        print(error_msg, file=sys.stderr, flush=True)
-        print(error_msg, flush=True)
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
@@ -459,15 +379,11 @@ def chat_conversation():
         })
 
     except Exception as e:
-        import traceback
-        print(f"Chat error: {e}\n{traceback.format_exc()}", flush=True)
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
-# Initialize database tables
 with app.app_context():
     db.create_all()
-    print("Database tables created!")
 
 
 if __name__ == '__main__':

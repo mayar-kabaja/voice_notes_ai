@@ -35,9 +35,6 @@ def extract_audio_from_video(video_path, output_audio_path=None):
             base_name = os.path.splitext(video_path)[0]
             output_audio_path = f"{base_name}_audio.mp3"
 
-        print(f"Extracting audio from video: {video_path}", flush=True)
-        print(f"Output audio file: {output_audio_path}", flush=True)
-
         # Load video and extract audio
         video = VideoFileClip(video_path)
 
@@ -63,9 +60,6 @@ def extract_audio_from_video(video_path, output_audio_path=None):
         # Verify the audio file was created
         if not os.path.exists(output_audio_path):
             raise Exception("Audio extraction failed - output file not created")
-
-        audio_size = os.path.getsize(output_audio_path)
-        print(f"Audio extracted successfully: {audio_size} bytes", flush=True)
 
         return output_audio_path
 
@@ -126,7 +120,6 @@ def cleanup_file(file_path):
     try:
         if os.path.exists(file_path):
             os.remove(file_path)
-            print(f"Cleaned up file: {file_path}", flush=True)
             return True
         return False
     except Exception as e:

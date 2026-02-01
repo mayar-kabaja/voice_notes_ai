@@ -78,9 +78,7 @@ function playClickSound() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if this is the chat interface (skip if chat interface detected)
     if (document.getElementById('chatFileInput')) {
-        console.log('Chat interface detected, skipping main.js initialization');
         return;
     }
 
@@ -342,8 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Show success toast
         showToast('File Selected', `${file.name} is ready to upload`, 'success', 3000);
-
-        console.log('Selected file:', file.name, formatFileSize(file.size), 'Type:', type);
     }
 
     // Format file size
@@ -529,14 +525,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                console.log('Requesting microphone access...');
-
-                // Request microphone access with basic constraints first
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: true
                 });
 
-                console.log('Microphone access granted!');
                 showToast('Recording Started', 'Your audio is being recorded', 'success', 3000);
 
                 // Detect supported audio format for this browser
@@ -551,8 +543,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     mimeType = 'audio/ogg;codecs=opus';
                 }
 
-                console.log('Using MIME type:', mimeType);
-
                 // Create MediaRecorder with detected format
                 mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
                 audioChunks = [];
@@ -564,9 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Handle recording stop
                 mediaRecorder.onstop = () => {
-                    // Get the actual MIME type from the recorder
                     const actualMimeType = mediaRecorder.mimeType || mimeType;
-                    console.log('Recording stopped. MIME type:', actualMimeType);
 
                     // Create blob from chunks with the correct type
                     recordedBlob = new Blob(audioChunks, { type: actualMimeType });

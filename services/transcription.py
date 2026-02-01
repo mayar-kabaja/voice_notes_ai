@@ -36,8 +36,7 @@ def transcribe_audio(audio_file_path):
             raise Exception(f"Transcription failed: {transcript.error}")
 
         return transcript.text
-    except Exception as e:
-        print(f"Transcription error: {e}")
+    except Exception:
         raise
 
 
@@ -72,6 +71,5 @@ def transcribe_audio_with_timestamps(audio_file_path):
                 for utterance in transcript.utterances
             ] if transcript.utterances else []
         }
-    except Exception as e:
-        print(f"Transcription error: {e}")
+    except Exception:
         raise
