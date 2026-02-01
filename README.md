@@ -260,7 +260,7 @@ noteflow-ai/
 │   └── uploads/           # Uploaded audio files
 └── utils/
     ├── __init__.py
-    └── helpers.py         # Helper functions
+    └── video_utils.py     # Video audio extraction
 ```
 
 ---

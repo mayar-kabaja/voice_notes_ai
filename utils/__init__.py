@@ -1,6 +1,6 @@
 """
 Utilities package for NoteFlow
 """
-from .helpers import allowed_file, save_uploaded_file, clean_old_files
+from .video_utils import extract_audio_from_video, cleanup_file
 
-__all__ = ['allowed_file', 'save_uploaded_file', 'clean_old_files']
+__all__ = ['extract_audio_from_video', 'cleanup_file']
