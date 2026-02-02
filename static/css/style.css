@@ -3871,3 +3871,1038 @@ a[title]:hover::after {
         margin: 6px 0;
     }
 }
+
+/* Small auth buttons for chat header */
+.btn-login-small,
+.btn-signup-small {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login-small {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-login-small:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(52, 152, 219, 0.05);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-login-small:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(52, 152, 219, 0.2);
+}
+
+.btn-signup-small {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.25);
+}
+
+.btn-signup-small:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.35);
+    transform: translateY(-2px);
+}
+
+.btn-signup-small:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+/* Auth Modal */
+.auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+.auth-modal-content {
+    position: relative;
+    background: var(--surface);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.auth-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.auth-modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.auth-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-modal-close:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    transform: rotate(90deg);
+}
+
+.auth-modal-close:active {
+    transform: rotate(90deg) scale(0.9);
+}
+
+.auth-modal-body {
+    padding: 28px;
+}
+
+.auth-modal-message {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    line-height: 1.6;
+}
+
+.auth-modal-message strong {
+    color: var(--primary-color);
+}
+
+.auth-modal-submessage {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.auth-modal-footer {
+    padding: 20px 28px 28px;
+    display: flex;
+    gap: 12px;
+}
+
+.btn-modal-signup,
+.btn-modal-login {
+    flex: 1;
+    padding: 14px 24px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-modal-signup {
+    background: var(--primary-color);
+    color: white;
+    border: 2px solid var(--primary-color);
+}
+
+.btn-modal-signup:hover {
+    background: #2980b9;
+    border-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.btn-modal-login {
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.btn-modal-login:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(52, 152, 219, 0.05);
+}
+
+
+/* Chat Header Auth Buttons */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header-auth {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-info-inline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-email {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.btn-logout-inline {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.3px;
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-logout-inline:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.05);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-logout-inline:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(231, 76, 60, 0.2);
+}
+
+.guest-buttons-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Mobile responsive for auth buttons */
+@media (max-width: 768px) {
+    .chat-header {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .user-email {
+        display: none; /* Hide email on mobile to save space */
+    }
+
+    .btn-login-small,
+    .btn-signup-small,
+    .btn-logout-inline {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-header-auth {
+        gap: 6px;
+    }
+
+    .guest-buttons-inline {
+        gap: 6px;
+    }
+
+    .btn-login-small,
+    .btn-signup-small,
+    .btn-logout-inline {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+}
+
+/* Auth Form Styles */
+.auth-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 14px;
+    background: var(--background);
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.12), 0 2px 8px rgba(52, 152, 219, 0.1);
+    background: var(--surface);
+    transform: translateY(-1px);
+}
+
+.form-group input:hover:not(:focus) {
+    border-color: rgba(52, 152, 219, 0.3);
+}
+
+.form-group input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.form-group-checkbox input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.form-group-checkbox label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    margin: 0;
+}
+
+.form-error {
+    background: rgba(231, 76, 60, 0.1);
+    border-left: 3px solid #e74c3c;
+    padding: 12px;
+    border-radius: 6px;
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 16px;
+}
+
+.btn-modal-primary {
+    width: 100%;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(52, 152, 219, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-modal-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-modal-primary:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.btn-modal-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+}
+
+.btn-modal-primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 14px rgba(52, 152, 219, 0.3);
+}
+
+.btn-modal-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.auth-modal-switch {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.auth-modal-switch a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-modal-switch a:hover {
+    text-decoration: underline;
+}
+
+/* Adjust auth modal content width for forms */
+.auth-modal-content {
+    max-width: 450px;
+}
+
+/* Mobile responsive for forms */
+@media (max-width: 480px) {
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-group input {
+        padding: 9px 12px;
+        font-size: 13px;
+    }
+
+    .btn-modal-primary {
+        padding: 11px 20px;
+        font-size: 14px;
+    }
+}
+
+/* OAuth Buttons */
+.oauth-divider {
+    text-align: center;
+    margin: 16px 0;
+    position: relative;
+}
+
+.oauth-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.oauth-divider span {
+    background: var(--surface);
+    padding: 0 16px;
+    position: relative;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.oauth-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.btn-oauth {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-oauth:hover {
+    border-color: var(--text-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-oauth:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-oauth svg {
+    flex-shrink: 0;
+}
+
+.btn-google:hover {
+    border-color: #4285F4;
+    background: rgba(66, 133, 244, 0.05);
+}
+
+.btn-github:hover {
+    border-color: #24292e;
+    background: rgba(36, 41, 46, 0.05);
+}
+
+/* Modal Secondary Button */
+.btn-modal-secondary {
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-modal-secondary:hover {
+    border-color: var(--primary-color);
+    background: rgba(52, 152, 219, 0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+.btn-modal-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Modal Danger Button */
+.btn-modal-danger {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.25);
+    letter-spacing: 0.3px;
+}
+
+.btn-modal-danger:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(231, 76, 60, 0.35);
+}
+
+.btn-modal-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.25);
+}
+
+/* Mobile responsive for OAuth buttons */
+@media (max-width: 480px) {
+    .oauth-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-oauth {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+/* Auth Buttons Row - All buttons in same line */
+.auth-buttons-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.auth-buttons-row .btn-modal-primary {
+    flex: 1;
+    min-width: 120px;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.auth-buttons-row .btn-modal-primary .btn-icon {
+    font-size: 16px;
+}
+
+.auth-buttons-row .or-text {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 0 4px;
+}
+
+.auth-buttons-row .btn-oauth {
+    flex: 1;
+    min-width: 110px;
+    margin-bottom: 0;
+}
+
+/* Responsive - Stack on small screens */
+@media (max-width: 640px) {
+    .auth-buttons-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .auth-buttons-row .btn-modal-primary,
+    .auth-buttons-row .btn-oauth {
+        width: 100%;
+    }
+    
+    .auth-buttons-row .or-text {
+        align-self: center;
+    }
+}
+
+/* Fix: Ensure auth-modal-switch appears on separate line */
+.auth-modal-footer {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-modal-switch {
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* OAuth Grid Layout - Multiple provider buttons */
+.oauth-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* OAuth provider-specific button styles */
+.btn-microsoft:hover {
+    background: #f3f3f3;
+    border-color: #8c8c8c;
+}
+
+.btn-apple {
+    color: var(--text-primary);
+}
+
+.btn-apple:hover {
+    background: #f3f3f3;
+    border-color: #8c8c8c;
+}
+
+.btn-facebook:hover {
+    background: #f3f3f3;
+    border-color: #1877F2;
+}
+
+/* Responsive grid - 2 columns on mobile */
+@media (max-width: 480px) {
+    .oauth-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Update OAuth buttons to single horizontal line */
+.oauth-buttons-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto; /* Allow horizontal scroll on very small screens */
+}
+
+.oauth-buttons-row .btn-oauth {
+    flex: 1;
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+/* Fix modal size and scrolling */
+.auth-modal-content {
+    position: relative;
+    max-height: 90vh; /* Don't exceed 90% of viewport height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-modal-body {
+    max-height: calc(90vh - 200px); /* Account for header and footer */
+    overflow-y: auto;
+}
+
+/* Ensure close button is always visible */
+.auth-modal-header {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 10;
+}
+
+/* Mobile optimization */
+@media (max-width: 640px) {
+    .oauth-buttons-row {
+        flex-wrap: wrap;
+    }
+    
+    .oauth-buttons-row .btn-oauth {
+        min-width: calc(50% - 4px); /* 2 buttons per row on mobile */
+    }
+}
+
+/* Icon-only OAuth buttons */
+.oauth-buttons-row .btn-oauth {
+    flex: 0 0 auto;
+    min-width: 48px;
+    width: 48px;
+    height: 48px;
+    padding: 12px;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.oauth-buttons-row .btn-oauth svg {
+    margin: 0;
+}
+
+.oauth-buttons-row .btn-oauth:hover {
+    transform: scale(1.1);
+}
+
+/* Reduce modal size */
+.auth-modal-content {
+    max-width: 420px;
+    max-height: none;
+    overflow-y: visible;
+}
+
+.auth-modal-body {
+    max-height: none;
+    overflow-y: visible;
+    padding: 20px 28px;
+}
+
+.auth-modal-header {
+    position: relative;
+    padding: 20px 28px 16px;
+}
+
+.auth-modal-footer {
+    padding: 0 28px 28px;
+}
+
+/* Compact form spacing */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.oauth-divider {
+    margin: 16px 0 12px;
+}
+
+.oauth-buttons-row {
+    margin-bottom: 16px;
+    justify-content: center;
+}
+
+/* Add tooltips on hover */
+.btn-google:hover::after {
+    content: 'Google';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.btn-github:hover::after {
+    content: 'GitHub';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.btn-apple:hover::after {
+    content: 'Apple';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.btn-facebook:hover::after {
+    content: 'Facebook';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.btn-oauth {
+    position: relative;
+}
+
+/* Fix modal frame and styling */
+.auth-modal-content {
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 440px;
+    margin: auto;
+    border: 1px solid var(--border-color);
+}
+
+.auth-modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.auth-modal-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.auth-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.auth-modal-close:hover {
+    background: var(--hover-bg, rgba(0, 0, 0, 0.05));
+    color: var(--text-primary);
+}
+
+/* Ensure modal is centered */
+.auth-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+/* Add smooth animation */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.auth-modal[style*="display: flex"] .auth-modal-content {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+/* Remove old conflicting styles */
+.auth-modal-body {
+    padding: 24px 28px;
+}
+
+.auth-modal-footer {
+    padding: 0 28px 28px;
+    border-top: none;
+}
+
+/* Fix modal content containment */
+.auth-modal-content {
+    position: relative;
+    z-index: 1001;
+    overflow: hidden; /* Ensure content stays within rounded corners */
+}
+
+.auth-modal-body {
+    background: var(--surface);
+    position: relative;
+    z-index: 1;
+}
+
+.auth-modal-footer {
+    background: var(--surface);
+    position: relative;
+    z-index: 1;
+}
+
+/* Ensure all content stays within modal bounds */
+.auth-form {
+    position: relative;
+    width: 100%;
+    margin: 0;
+}
+
+/* Fix any potential overflow */
+.auth-modal-header,
+.auth-modal-body,
+.auth-modal-footer {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Remove any negative margins */
+.auth-modal-body > *:first-child {
+    margin-top: 0;
+}
+
+.auth-modal-body > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Remove scrollbar from OAuth buttons row */
+.oauth-buttons-row {
+    overflow-x: visible;
+    overflow-y: visible;
+}
+
+/* Ensure buttons stay in one line without scroll */
+.oauth-buttons-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    justify-content: center;
+    flex-wrap: nowrap;
+}

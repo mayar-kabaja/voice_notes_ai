@@ -140,6 +140,20 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// ============== AUTH CHECK HELPER ==============
+
+function requireLogin(action) {
+    // Check if user is authenticated by looking for user-info-inline div
+    const isLoggedIn = document.querySelector('.user-info-inline') !== null;
+
+    if (!isLoggedIn) {
+        // Show the login modal with the specific action message
+        showLoginModal(action);
+        return false;
+    }
+    return true;
+}
+
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -938,6 +952,7 @@ function copyTranscriptResult(button) {
 // ============== RECORDING FUNCTIONALITY ==============
 
 recordAudioBtn.addEventListener('click', () => {
+    if (!requireLogin('record audio')) return;
     playSound('click'); // Play click sound
     inlineRecording.style.display = 'block';
     chatTextInput.style.display = 'none';
@@ -1071,6 +1086,7 @@ inlineDiscardRecordingBtn.addEventListener('click', () => {
 // NOTE: Upload button handler is now at line ~726 (moved to conversational AI section)
 
 youtubeBtn.addEventListener('click', () => {
+    if (!requireLogin('add YouTube videos')) return;
     playSound('click'); // Play click sound
     chatTextInput.style.display = 'none';
     chatUrlInput.style.display = 'flex';
@@ -1295,6 +1311,7 @@ addResultMessage = function(data, type) {
 // Update file upload button behavior
 let uploadBtnClicked = false;
 uploadFileBtn.addEventListener('click', function(e) {
+    if (!requireLogin('upload files')) return;
     playSound('click');
     e.preventDefault();
     e.stopPropagation();
@@ -1333,13 +1350,7 @@ document.getElementById('cancelUrl').addEventListener('click', () => {
     youtubeUrl.value = '';
 });
 
-// Update YouTube button
-youtubeBtn.addEventListener('click', () => {
-    chatTextInput.style.display = 'none';
-    chatUrlInput.style.display = 'flex';
-    youtubeUrl.focus();
-});
-
+// Note: YouTube button handler is defined earlier with auth check
 // Note: YouTube URL submission is handled earlier in the file
 // The handler at line ~578 already manages the flow
 

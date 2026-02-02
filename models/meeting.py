@@ -13,6 +13,7 @@ class Meeting(db.Model):
     __tablename__ = 'meetings'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     title = db.Column(db.String(200), nullable=True)
     audio_filename = db.Column(db.String(255), nullable=False)
     transcript = db.Column(db.Text, nullable=False)
@@ -28,6 +29,7 @@ class Meeting(db.Model):
         """Convert meeting to dictionary"""
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'title': self.title,
             'audio_filename': self.audio_filename,
             'transcript': self.transcript,
@@ -44,6 +46,7 @@ class Book(db.Model):
     __tablename__ = 'books'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     title = db.Column(db.String(200), nullable=True)
     book_filename = db.Column(db.String(255), nullable=False)
     file_type = db.Column(db.String(10), nullable=False)  # pdf, epub, txt, docx
@@ -60,6 +63,7 @@ class Book(db.Model):
         """Convert book to dictionary"""
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'title': self.title,
             'book_filename': self.book_filename,
             'file_type': self.file_type,
@@ -77,6 +81,7 @@ class Video(db.Model):
     __tablename__ = 'videos'
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     title = db.Column(db.String(200), nullable=True)
     video_url = db.Column(db.String(500), nullable=False)
     video_id = db.Column(db.String(50), nullable=False)
@@ -93,6 +98,7 @@ class Video(db.Model):
         """Convert video to dictionary"""
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'title': self.title,
             'video_url': self.video_url,
             'video_id': self.video_id,

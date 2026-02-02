@@ -4,9 +4,11 @@ Main Flask application for NoteFlow AI
 import os
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_migrate import Migrate
+from flask_login import LoginManager, login_required, current_user
 from werkzeug.utils import secure_filename
 from config import Config
 from models.meeting import db, Meeting, Book, Video
+from models.user import User
 from services.transcription import transcribe_audio
 from services.summarization import generate_summary, translate_text, summarize_book
 from services.book_extraction import extract_text_from_book, get_book_title_from_text
@@ -21,6 +23,26 @@ db.init_app(app)
 
 # Initialize Flask-Migrate for database migrations
 migrate = Migrate(app, db)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Load user by ID for Flask-Login"""
+    return User.query.get(int(user_id))
+
+# Register blueprints
+from routes.auth import auth, init_oauth
+app.register_blueprint(auth)
+
+# Initialize OAuth
+init_oauth(app)
 
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -51,6 +73,7 @@ def index():
 
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload():
     """Handle audio file upload and processing"""
     try:
@@ -95,7 +118,8 @@ def upload():
             title=file.filename,
             audio_filename=filename,
             transcript=transcript,
-            summary=summary
+            summary=summary,
+            user_id=current_user.id
         )
         db.session.add(meeting)
         db.session.commit()
@@ -111,16 +135,18 @@ def upload():
 
 
 @app.route('/api/meeting/<int:meeting_id>')
+@login_required
 def get_meeting(meeting_id):
     """API endpoint to get meeting data"""
-    meeting = Meeting.query.get_or_404(meeting_id)
+    meeting = Meeting.query.filter_by(id=meeting_id, user_id=current_user.id).first_or_404()
     return jsonify(meeting.to_dict())
 
 
 @app.route('/api/meetings')
+@login_required
 def get_meetings():
-    """API endpoint to get all meetings"""
-    meetings = Meeting.query.order_by(Meeting.created_at.desc()).all()
+    """API endpoint to get all meetings for current user"""
+    meetings = Meeting.query.filter_by(user_id=current_user.id).order_by(Meeting.created_at.desc()).all()
     return jsonify([meeting.to_dict() for meeting in meetings])
 
 
@@ -156,12 +182,14 @@ def translate():
 # ============== BOOKS SECTION ==============
 
 @app.route('/books')
+@login_required
 def books():
     """Books summarization page"""
     return render_template('books.html')
 
 
 @app.route('/books/upload', methods=['POST'])
+@login_required
 def upload_book():
     """Handle book file upload and processing"""
     try:
@@ -199,7 +227,8 @@ def upload_book():
             book_filename=filename,
             file_type=file_type,
             full_text=full_text[:50000],  # Store first 50k chars to save space
-            summary=summary
+            summary=summary,
+            user_id=current_user.id
         )
         db.session.add(book)
         db.session.commit()
@@ -215,22 +244,25 @@ def upload_book():
 
 
 @app.route('/api/book/<int:book_id>')
+@login_required
 def get_book(book_id):
-    """API endpoint to get book data"""
-    book = Book.query.get_or_404(book_id)
+    """API endpoint to get book data for current user"""
+    book = Book.query.filter_by(id=book_id, user_id=current_user.id).first_or_404()
     return jsonify(book.to_dict())
 
 
 @app.route('/api/books')
+@login_required
 def get_books():
-    """API endpoint to get all books"""
-    books = Book.query.order_by(Book.created_at.desc()).all()
-    return jsonify([book.to_dict() for book in books])
+    """API endpoint to get all books for current user"""
+    books_list = Book.query.filter_by(user_id=current_user.id).order_by(Book.created_at.desc()).all()
+    return jsonify([book.to_dict() for book in books_list])
 
 
 # ============== VIDEOS SECTION ==============
 
 @app.route('/videos/process', methods=['POST'])
+@login_required
 def process_video():
     """Handle YouTube video URL processing OR video file upload"""
     try:
@@ -264,7 +296,8 @@ def process_video():
                     video_url=filename,  # Store filename in video_url field
                     video_id='file_upload',
                     transcript=transcript[:50000],
-                    summary=summary
+                    summary=summary,
+                    user_id=current_user.id
                 )
                 db.session.add(video)
                 db.session.commit()
@@ -305,7 +338,8 @@ def process_video():
                 video_url=video_url,
                 video_id=video_id,
                 transcript=transcript[:50000],  # Store first 50k chars
-                summary=summary
+                summary=summary,
+                user_id=current_user.id
             )
             db.session.add(video)
             db.session.commit()
@@ -321,16 +355,18 @@ def process_video():
 
 
 @app.route('/api/video/<int:video_id>')
+@login_required
 def get_video(video_id):
-    """API endpoint to get video data"""
-    video = Video.query.get_or_404(video_id)
+    """API endpoint to get video data for current user"""
+    video = Video.query.filter_by(id=video_id, user_id=current_user.id).first_or_404()
     return jsonify(video.to_dict())
 
 
 @app.route('/api/videos')
+@login_required
 def get_videos():
-    """API endpoint to get all videos"""
-    videos = Video.query.order_by(Video.created_at.desc()).all()
+    """API endpoint to get all videos for current user"""
+    videos = Video.query.filter_by(user_id=current_user.id).order_by(Video.created_at.desc()).all()
     return jsonify([video.to_dict() for video in videos])
 
 
@@ -357,19 +393,19 @@ def chat_conversation():
         context_summary = None
         context_transcript = None
 
-        if context_id and context_type:
+        if context_id and context_type and current_user.is_authenticated:
             if context_type == 'audio':
-                meeting = Meeting.query.get(context_id)
+                meeting = Meeting.query.filter_by(id=context_id, user_id=current_user.id).first()
                 if meeting:
                     context_summary = meeting.summary
                     context_transcript = meeting.transcript
             elif context_type == 'video':
-                video = Video.query.get(context_id)
+                video = Video.query.filter_by(id=context_id, user_id=current_user.id).first()
                 if video:
                     context_summary = video.summary
                     context_transcript = video.transcript
             elif context_type == 'book':
-                book = Book.query.get(context_id)
+                book = Book.query.filter_by(id=context_id, user_id=current_user.id).first()
                 if book:
                     context_summary = book.summary
                     context_transcript = book.full_text
