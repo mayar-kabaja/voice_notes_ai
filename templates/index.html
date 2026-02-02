@@ -1,11 +1,35 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Chat History Sidebar -->
+<div class="chat-history-sidebar" id="chatHistorySidebar">
+    <div class="sidebar-header">
+        <h3>Chat History</h3>
+        <button class="sidebar-close-btn" onclick="toggleHistorySidebar()">✕</button>
+    </div>
+    <div class="sidebar-actions">
+        <button class="btn-new-conversation" onclick="startNewConversation()">
+            <span>➕</span>
+            <span>New Conversation</span>
+        </button>
+    </div>
+    <div class="sidebar-content">
+        <div id="conversationsList" class="conversations-list">
+            <div class="loading-conversations">Loading conversations...</div>
+        </div>
+    </div>
+</div>
+
 <!-- Chat Container -->
 <div class="chat-container">
     <!-- Chat Header -->
     <div class="chat-header">
         <div class="chat-header-info">
+            {% if current_user.is_authenticated %}
+                <button class="history-toggle-btn" onclick="toggleHistorySidebar()" title="Chat History">
+                    📋
+                </button>
+            {% endif %}
             <div class="ai-avatar">🤖</div>
             <div>
                 <h3>NoteFlow AI Assistant</h3>
@@ -446,6 +470,25 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Conversation Confirmation Modal -->
+<div id="deleteConversationModal" class="auth-modal" style="display: none;">
+    <div class="auth-modal-overlay" onclick="closeDeleteConversationModal()"></div>
+    <div class="auth-modal-content" style="max-width: 400px;">
+        <div class="auth-modal-header">
+            <h3>Delete Conversation</h3>
+            <button class="auth-modal-close" onclick="closeDeleteConversationModal()">&times;</button>
+        </div>
+        <div class="auth-modal-body">
+            <p class="auth-modal-message">Are you sure you want to delete this conversation?</p>
+            <p class="auth-modal-submessage">This action cannot be undone.</p>
+        </div>
+        <div class="auth-modal-footer" style="flex-direction: row; gap: 12px;">
+            <button type="button" class="btn-modal-secondary" onclick="closeDeleteConversationModal()" style="flex: 1;">Cancel</button>
+            <button type="button" class="btn-modal-danger" onclick="confirmDeleteConversation()" style="flex: 1;">Delete</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -605,6 +648,7 @@ document.addEventListener('keydown', function(event) {
         closeLoginModal();
         closeSignupModal();
         closeLogoutModal();
+        closeDeleteConversationModal();
     }
 });
 
@@ -632,6 +676,280 @@ function loginWithGoogle() {
 function loginWithGithub() {
     playSound('click');
     window.location.href = '/auth/github';
+}
+
+// ============== CHAT HISTORY FUNCTIONALITY ==============
+
+let currentConversationId = null;
+
+// Helper function to add messages (wraps chat.js functions)
+function addMessage(content, type) {
+    if (type === 'user') {
+        addUserMessage(content);
+    } else if (type === 'ai') {
+        addAIMessage(content);
+    }
+}
+
+// Toggle chat history sidebar
+function toggleHistorySidebar() {
+    const sidebar = document.getElementById('chatHistorySidebar');
+    const body = document.body;
+
+    if (sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        body.classList.remove('sidebar-open');
+    } else {
+        sidebar.classList.add('open');
+        body.classList.add('sidebar-open');
+        loadConversations();
+    }
+}
+
+// Update which conversation is marked as active in the sidebar
+function updateActiveConversation(conversationId) {
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-conversation-id') == conversationId) {
+            item.classList.add('active');
+        }
+    });
+}
+
+// Load all conversations from server
+async function loadConversations() {
+    const conversationsList = document.getElementById('conversationsList');
+    conversationsList.innerHTML = '<div class="loading-conversations">Loading conversations...</div>';
+
+    try {
+        const response = await fetch('/api/conversations');
+        const conversations = await response.json();
+
+        if (conversations.length === 0) {
+            conversationsList.innerHTML = `
+                <div class="no-conversations">
+                    <div class="no-conversations-icon">💬</div>
+                    <p>No conversations yet</p>
+                    <p style="font-size: 12px; opacity: 0.7;">Start chatting to create your first conversation!</p>
+                </div>
+            `;
+            return;
+        }
+
+        conversationsList.innerHTML = '';
+        conversations.forEach(conv => {
+            const conversationItem = createConversationItem(conv);
+            conversationsList.appendChild(conversationItem);
+        });
+
+        // Restore active conversation highlighting if there is one
+        if (currentConversationId) {
+            updateActiveConversation(currentConversationId);
+        }
+    } catch (error) {
+        conversationsList.innerHTML = '<div class="loading-conversations">Failed to load conversations</div>';
+        console.error('Error loading conversations:', error);
+    }
+}
+
+// Create conversation item HTML element
+function createConversationItem(conversation) {
+    const item = document.createElement('div');
+    item.className = 'conversation-item';
+    if (currentConversationId === conversation.id) {
+        item.classList.add('active');
+    }
+    item.setAttribute('data-conversation-id', conversation.id);
+
+    const date = new Date(conversation.updated_at);
+    const formattedDate = formatDate(date);
+
+    item.innerHTML = `
+        <div class="conversation-title">${conversation.title}</div>
+        <div class="conversation-meta">
+            <span class="conversation-date">${formattedDate}</span>
+            <span class="conversation-messages-count">${conversation.message_count} messages</span>
+        </div>
+        <div class="conversation-actions">
+            <button class="conversation-action-btn" onclick="deleteConversation(${conversation.id}, event)" title="Delete">
+                🗑️
+            </button>
+        </div>
+    `;
+
+    item.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('conversation-action-btn')) {
+            loadConversation(conversation.id);
+        }
+    });
+
+    return item;
+}
+
+// Format date for display
+function formatDate(date) {
+    const now = new Date();
+    const diff = now - date;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 7) {
+        return date.toLocaleDateString();
+    } else if (days > 0) {
+        return `${days}d ago`;
+    } else if (hours > 0) {
+        return `${hours}h ago`;
+    } else if (minutes > 0) {
+        return `${minutes}m ago`;
+    } else {
+        return 'Just now';
+    }
+}
+
+// Load specific conversation
+async function loadConversation(conversationId) {
+    try {
+        const response = await fetch(`/api/conversation/${conversationId}`);
+        const conversation = await response.json();
+
+        // Clear current chat messages
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+
+        // Reset message counter and count loaded messages
+        if (typeof currentMessageCount !== 'undefined') {
+            currentMessageCount = conversation.messages.length;
+        }
+
+        // Display conversation messages
+        conversation.messages.forEach(msg => {
+            if (msg.role === 'user') {
+                addMessage(msg.content, 'user');
+            } else {
+                addMessage(msg.content, 'ai');
+            }
+        });
+
+        // Set current conversation ID
+        currentConversationId = conversationId;
+
+        // Update UI to show active conversation
+        updateActiveConversation(conversationId);
+
+        // Close sidebar on mobile
+        if (window.innerWidth < 768) {
+            toggleHistorySidebar();
+        }
+
+    } catch (error) {
+        console.error('Error loading conversation:', error);
+        showToast('Error', 'Failed to load conversation', 'error');
+    }
+}
+
+// Store conversation ID to delete
+let conversationIdToDelete = null;
+
+// Delete conversation (show confirmation modal)
+function deleteConversation(conversationId, event) {
+    event.stopPropagation();
+    conversationIdToDelete = conversationId;
+    document.getElementById('deleteConversationModal').style.display = 'flex';
+}
+
+// Close delete conversation modal
+function closeDeleteConversationModal() {
+    document.getElementById('deleteConversationModal').style.display = 'none';
+    conversationIdToDelete = null;
+}
+
+// Confirm delete conversation
+async function confirmDeleteConversation() {
+    if (!conversationIdToDelete) return;
+
+    const conversationId = conversationIdToDelete;
+    closeDeleteConversationModal();
+
+    try {
+        const response = await fetch(`/api/conversation/${conversationId}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // If deleted conversation was current, clear chat
+            if (currentConversationId === conversationId) {
+                startNewConversation();
+            }
+
+            // Reload conversations list
+            loadConversations();
+            showToast('Deleted', 'Conversation deleted successfully', 'success');
+        } else {
+            showToast('Error', data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting conversation:', error);
+        showToast('Error', 'Failed to delete conversation', 'error');
+    }
+}
+
+// Start new conversation (clear current)
+function startNewConversation() {
+    currentConversationId = null;
+
+    // Reset message counter
+    if (typeof currentMessageCount !== 'undefined') {
+        currentMessageCount = 0;
+    }
+
+    // Clear current context
+    if (typeof currentContext !== 'undefined') {
+        currentContext = {
+            type: null,
+            id: null,
+            data: null
+        };
+    }
+
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = '';
+
+    // Show welcome message
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message ai-message';
+    welcomeDiv.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-content">
+            <div class="message-bubble">
+                <p>👋 Hi! I'm your NoteFlow AI assistant.</p>
+                <p>I can help you transform content into structured notes:</p>
+                <ul>
+                    <li>🎤 <strong>Audio recordings</strong> - Record or upload MP3, WAV, M4A</li>
+                    <li>📚 <strong>Books & Documents</strong> - Upload PDF, EPUB, TXT, DOCX</li>
+                    <li>🎬 <strong>Videos</strong> - Upload files or paste YouTube URLs</li>
+                </ul>
+                <p><strong>Just drop a file below or click to browse!</strong> ✨</p>
+            </div>
+        </div>
+    `;
+    chatMessages.appendChild(welcomeDiv);
+
+    // Update UI
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('chatHistorySidebar');
+        if (sidebar.classList.contains('open')) {
+            toggleHistorySidebar();
+        }
+    }
 }
 
 </script>

@@ -121,12 +121,20 @@ function playSound(type) {
                 oscillator.stop(now + 0.05);
                 break;
 
-            case 'typing': // Typing sound (subtle)
-                oscillator.frequency.setValueAtTime(1200, now);
-                gainNode.gain.setValueAtTime(0.08, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+            case 'typing': // iPhone keyboard typing sound
+                // Create a soft "tock" sound like iPhone keyboard
+                oscillator.type = 'sine';
+
+                // Soft, muted click with slight pitch variation (like iOS)
+                oscillator.frequency.setValueAtTime(1100 + Math.random() * 100, now);
+
+                // Very quick attack and decay for that subtle "tock"
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.045, now + 0.002); // Quick attack
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.012); // Fast decay
+
                 oscillator.start(now);
-                oscillator.stop(now + 0.03);
+                oscillator.stop(now + 0.015);
                 break;
         }
     } catch (error) {
@@ -673,6 +681,10 @@ function addResultMessage(data, type) {
 
     chatMessages.appendChild(messageDiv);
 
+    // Set context when result is shown
+    const id = data.id;
+    setContext(type, id, data);
+
     // Scroll to the top of the new result message
     setTimeout(() => {
         messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1195,9 +1207,49 @@ let currentContext = {
     data: null   // Full result data
 };
 
+// Message limit configuration
+const MESSAGE_LIMIT = 30;
+const MESSAGE_WARNING_THRESHOLD = 25;
+let currentMessageCount = 0;
+
 // Update context when result is shown
 function setContext(type, id, data) {
     currentContext = { type, id, data };
+}
+
+// Show warning when approaching message limit
+function showMessageLimitWarning() {
+    showToast('💬 Conversation getting long', `${MESSAGE_LIMIT - MESSAGE_WARNING_THRESHOLD} messages left. Consider starting a new conversation soon.`, 'warning', 8000);
+}
+
+// Show message when limit is reached
+function showMessageLimitReached() {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ai-message limit-message';
+    messageDiv.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-content">
+            <div class="message-bubble limit-bubble">
+                <p><strong>💬 Conversation Limit Reached</strong></p>
+                <p>You've reached the ${MESSAGE_LIMIT}-message limit for this conversation.</p>
+                <p><strong>Why limit messages?</strong></p>
+                <ul>
+                    <li>✅ Keeps conversations focused and manageable</li>
+                    <li>✅ Better AI context and responses</li>
+                    <li>✅ Easier to find specific topics later</li>
+                </ul>
+                <p><strong>Start a new conversation to continue chatting!</strong></p>
+                <button class="btn-new-chat" onclick="startNewConversation()">
+                    <span>➕</span>
+                    <span>Start New Conversation</span>
+                </button>
+            </div>
+        </div>
+    `;
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+
+    showToast('💬 Message limit reached', 'Please start a new conversation', 'info', 6000);
 }
 
 // Add typing sound effect
@@ -1226,20 +1278,27 @@ userMessageInput.addEventListener('keypress', (e) => {
 
 async function sendUserMessage() {
     const message = userMessageInput.value.trim();
-    
+
     if (!message) {
         return;
     }
-    
+
+    // Check if message limit is reached
+    if (currentMessageCount >= MESSAGE_LIMIT) {
+        showMessageLimitReached();
+        return;
+    }
+
     // Add user message to chat
     addUserMessage(message);
-    
+    currentMessageCount++;
+
     // Clear input
     userMessageInput.value = '';
-    
+
     // Show typing indicator (no progress bar for chat)
     const processingMsg = addProcessingMessage('', false);
-    
+
     try {
         // Send to backend
         const response = await fetch('/api/chat', {
@@ -1248,16 +1307,39 @@ async function sendUserMessage() {
             body: JSON.stringify({
                 message: message,
                 context_type: currentContext.type,
-                context_id: currentContext.id
+                context_id: currentContext.id,
+                conversation_id: currentConversationId  // Include current conversation ID if exists
             })
         });
-        
+
         const data = await response.json();
-        
+
         removeProcessingMessage();
-        
+
         if (data.success) {
             addAIMessage(data.response);
+            currentMessageCount++;
+
+            // Check if approaching message limit
+            if (currentMessageCount === MESSAGE_WARNING_THRESHOLD) {
+                showMessageLimitWarning();
+            }
+
+            // Update current conversation ID if returned from server
+            if (data.conversation_id) {
+                const isNewConversation = !currentConversationId;
+                currentConversationId = data.conversation_id;
+
+                // If this is a new conversation, reload the sidebar to show it
+                if (isNewConversation && typeof loadConversations === 'function') {
+                    loadConversations();
+                }
+
+                // Update active conversation in sidebar
+                if (typeof updateActiveConversation === 'function') {
+                    updateActiveConversation(currentConversationId);
+                }
+            }
         } else {
             // Format error from server
             const errorMessage = data.message || 'Unknown error';
@@ -1296,17 +1378,6 @@ async function sendUserMessage() {
         }
     }
 }
-
-// Update addResultMessage to set context
-const originalAddResultMessage = addResultMessage;
-addResultMessage = function(data, type) {
-    // Call original function
-    originalAddResultMessage(data, type);
-    
-    // Set context
-    const id = data.id;
-    setContext(type, id, data);
-};
 
 // Update file upload button behavior
 let uploadBtnClicked = false;

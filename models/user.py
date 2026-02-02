@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     meetings = db.relationship('Meeting', backref='user', lazy=True, cascade='all, delete-orphan')
     books = db.relationship('Book', backref='user', lazy=True, cascade='all, delete-orphan')
     videos = db.relationship('Video', backref='user', lazy=True, cascade='all, delete-orphan')
+    conversations = db.relationship('Conversation', backref='user', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<User {self.email}>'

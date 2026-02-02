@@ -2,12 +2,13 @@
 Main Flask application for NoteFlow AI
 """
 import os
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from datetime import datetime
+from flask import Flask, render_template, request, jsonify
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_required, current_user
 from werkzeug.utils import secure_filename
 from config import Config
-from models.meeting import db, Meeting, Book, Video
+from models.meeting import db, Meeting, Book, Video, Conversation, ChatMessage
 from models.user import User
 from services.transcription import transcribe_audio
 from services.summarization import generate_summary, translate_text, summarize_book
@@ -385,6 +386,7 @@ def chat_conversation():
         user_message = data.get('message', '').strip()
         context_type = data.get('context_type')  # 'audio', 'video', 'book'
         context_id = data.get('context_id')  # meeting_id, video_id, book_id
+        conversation_id = data.get('conversation_id')  # Optional: existing conversation ID
 
         if not user_message:
             return jsonify({'success': False, 'message': 'No message provided'}), 400
@@ -419,12 +421,114 @@ def chat_conversation():
             transcript=context_transcript
         )
 
+        # Save conversation if user is authenticated
+        if current_user.is_authenticated:
+            conversation = None
+
+            # Get or create conversation
+            if conversation_id:
+                conversation = Conversation.query.filter_by(id=conversation_id, user_id=current_user.id).first()
+
+            if not conversation:
+                # Create new conversation
+                # Generate title from first message (first 50 chars)
+                title = user_message[:50] + ('...' if len(user_message) > 50 else '')
+                conversation = Conversation(
+                    user_id=current_user.id,
+                    title=title,
+                    context_type=context_type,
+                    context_id=context_id
+                )
+                db.session.add(conversation)
+                db.session.flush()  # Get the conversation ID
+
+            # Save user message
+            user_msg = ChatMessage(
+                conversation_id=conversation.id,
+                role='user',
+                content=user_message
+            )
+            db.session.add(user_msg)
+
+            # Save AI response
+            ai_msg = ChatMessage(
+                conversation_id=conversation.id,
+                role='assistant',
+                content=ai_response
+            )
+            db.session.add(ai_msg)
+
+            # Update conversation timestamp
+            conversation.updated_at = datetime.utcnow()
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'response': ai_response,
+                'conversation_id': conversation.id
+            })
+
         return jsonify({
             'success': True,
             'response': ai_response
         })
 
     except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ============== CONVERSATION HISTORY ==============
+
+@app.route('/api/conversations')
+@login_required
+def get_conversations():
+    """API endpoint to get all conversations for current user"""
+    conversations = Conversation.query.filter_by(user_id=current_user.id).order_by(Conversation.updated_at.desc()).all()
+    return jsonify([conversation.to_dict(include_messages=False) for conversation in conversations])
+
+
+@app.route('/api/conversation/<int:conversation_id>')
+@login_required
+def get_conversation(conversation_id):
+    """API endpoint to get specific conversation with messages"""
+    conversation = Conversation.query.filter_by(id=conversation_id, user_id=current_user.id).first_or_404()
+    return jsonify(conversation.to_dict(include_messages=True))
+
+
+@app.route('/api/conversation/<int:conversation_id>', methods=['DELETE'])
+@login_required
+def delete_conversation(conversation_id):
+    """API endpoint to delete a conversation"""
+    try:
+        conversation = Conversation.query.filter_by(id=conversation_id, user_id=current_user.id).first_or_404()
+        db.session.delete(conversation)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Conversation deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/conversation/<int:conversation_id>', methods=['PUT'])
+@login_required
+def update_conversation(conversation_id):
+    """API endpoint to update conversation title"""
+    try:
+        conversation = Conversation.query.filter_by(id=conversation_id, user_id=current_user.id).first_or_404()
+        data = request.get_json()
+        new_title = data.get('title', '').strip()
+
+        if not new_title:
+            return jsonify({'success': False, 'message': 'Title cannot be empty'}), 400
+
+        conversation.title = new_title
+        conversation.updated_at = datetime.utcnow()
+        db.session.commit()
+
+        return jsonify({'success': True, 'message': 'Conversation updated successfully', 'conversation': conversation.to_dict(include_messages=False)})
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 
