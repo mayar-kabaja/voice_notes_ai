@@ -73,23 +73,6 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/admin/run-migrations')
-def run_migrations():
-    """Temporary endpoint to run migrations - DELETE AFTER USE"""
-    try:
-        from flask_migrate import upgrade
-        upgrade()
-        return jsonify({
-            'success': True,
-            'message': '✅ Migrations completed successfully! You can now delete this endpoint.'
-        })
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': f'❌ Migration failed: {str(e)}'
-        }), 500
-
-
 @app.route('/upload', methods=['POST'])
 @login_required
 def upload():
