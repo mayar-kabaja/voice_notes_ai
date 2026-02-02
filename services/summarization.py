@@ -149,8 +149,13 @@ def translate_text(text, target_language):
     """
     prompt = f"""
     Translate the following text to {target_language}.
-    Maintain the same formatting, structure, and sections.
-    Keep headers and bullet points intact.
+
+    IMPORTANT RULES:
+    1. Return ONLY the translated text
+    2. Do NOT include the original text
+    3. Do NOT add any explanations or commentary
+    4. Maintain the same formatting, structure, and sections
+    5. Keep headers and bullet points intact
 
     Text to translate:
     {text}
@@ -160,7 +165,7 @@ def translate_text(text, target_language):
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": f"You are a professional translator. Translate text to {target_language} while preserving formatting."},
+                {"role": "system", "content": f"You are a professional translator. Translate ONLY to {target_language} without including the original text. Return only the translation, nothing else."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,

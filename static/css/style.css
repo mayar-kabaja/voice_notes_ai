@@ -2527,30 +2527,48 @@ footer {
 }
 
 .translate-dropdown-chat select {
-    padding: 8px 12px;
+    padding: 10px;
     background: linear-gradient(135deg, rgba(38, 38, 38, 0.8) 0%, rgba(23, 23, 23, 0.6) 100%);
     border: 1px solid rgba(59, 130, 246, 0.15);
     border-radius: 8px;
     color: var(--text-primary);
     font-family: 'Poppins', sans-serif;
-    font-size: 0.82rem;
+    font-size: 0;
     cursor: pointer;
-    width: auto;
-    min-width: 140px;
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    height: 40px;
     font-weight: 500;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     transition: all 0.25s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-indent: -9999px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px 20px;
 }
 
 .translate-dropdown-chat select:hover {
     border-color: var(--primary-color);
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(38, 38, 38, 0.8) 100%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px 20px;
     box-shadow: 0 3px 8px rgba(59, 130, 246, 0.2);
 }
 
 .translate-dropdown-chat select:focus {
     outline: none;
     border-color: var(--primary-light);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px 20px;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -3036,9 +3054,13 @@ footer {
     }
 
     .translate-dropdown-chat select {
-        font-size: 0.75rem;
-        padding: 8px 10px;
-        min-width: 120px;
+        font-size: 0;
+        padding: 10px;
+        width: 36px;
+        min-width: 36px;
+        max-width: 36px;
+        height: 36px;
+        background-size: 18px 18px;
     }
 
     /* Export buttons stay horizontal */
@@ -3245,9 +3267,13 @@ footer {
     }
 
     .translate-dropdown-chat select {
-        font-size: 0.72rem;
-        padding: 7px 8px;
-        min-width: 110px;
+        font-size: 0;
+        padding: 8px;
+        width: 36px;
+        min-width: 36px;
+        max-width: 36px;
+        height: 36px;
+        background-size: 18px 18px;
     }
 
     .summary-controls .export-buttons-chat {
@@ -3388,6 +3414,15 @@ footer {
     .send-btn {
         min-width: 44px;
         min-height: 44px;
+    }
+
+    .translate-dropdown-chat select {
+        width: 44px;
+        min-width: 44px;
+        max-width: 44px;
+        min-height: 44px;
+        height: 44px;
+        background-size: 22px 22px;
     }
 
     /* Prevent text selection during touch */
