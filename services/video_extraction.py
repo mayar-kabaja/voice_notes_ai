@@ -8,6 +8,9 @@ except ImportError:
     NoTranscriptFound = Exception
     VideoUnavailable = Exception
 import re
+import os
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 def extract_video_id(url):
     """Extract YouTube video ID from various URL formats"""
@@ -28,10 +31,73 @@ def extract_video_id(url):
 
     return None
 
+
+def get_transcript_via_youtube_api(video_id):
+    """
+    Get transcript using official YouTube Data API v3
+    More reliable in production environments
+    """
+    api_key = os.getenv('YOUTUBE_API_KEY')
+
+    if not api_key:
+        return None  # Fall back to transcript API
+
+    try:
+        # Build YouTube API client
+        youtube = build('youtube', 'v3', developerKey=api_key)
+
+        # Get caption tracks for the video
+        captions_response = youtube.captions().list(
+            part='snippet',
+            videoId=video_id
+        ).execute()
+
+        if not captions_response.get('items'):
+            return None
+
+        # Find English caption or first available
+        caption_id = None
+        for item in captions_response['items']:
+            lang = item['snippet']['language']
+            if lang in ['en', 'en-US', 'en-GB']:
+                caption_id = item['id']
+                break
+
+        if not caption_id and captions_response['items']:
+            caption_id = captions_response['items'][0]['id']
+
+        if not caption_id:
+            return None
+
+        # Download the caption
+        caption_response = youtube.captions().download(
+            id=caption_id,
+            tfmt='srt'  # SubRip format
+        ).execute()
+
+        # Parse SRT format and extract text
+        import re
+        # Remove timing and numbering from SRT
+        text = re.sub(r'\d+\n\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\n', '', caption_response)
+        text = re.sub(r'^\d+$', '', text, flags=re.MULTILINE)
+        text = ' '.join(text.split())
+
+        return text
+
+    except HttpError as e:
+        # API quota exceeded or other API error
+        if e.resp.status == 403:
+            print(f"YouTube API quota exceeded or permissions issue: {e}")
+        return None
+    except Exception as e:
+        print(f"YouTube Data API error: {e}")
+        return None
+
 def get_youtube_transcript(video_url):
     """
-    Get transcript from YouTube video URL
-    Returns the transcript text and video title
+    Get transcript from YouTube video URL using hybrid approach:
+    1. Try official YouTube Data API (works in production)
+    2. Fall back to transcript scraping API (works locally)
     """
     import time
 
@@ -40,6 +106,16 @@ def get_youtube_transcript(video_url):
 
         if not video_id:
             raise ValueError("Invalid YouTube URL format")
+
+        # Try official YouTube Data API first (production-safe)
+        transcript_text = get_transcript_via_youtube_api(video_id)
+        if transcript_text:
+            return {
+                'video_id': video_id,
+                'transcript': transcript_text,
+                'success': True,
+                'method': 'youtube_data_api'
+            }
 
         # Try multiple language options (including auto-generated)
         languages_to_try = [
@@ -150,7 +226,8 @@ def get_youtube_transcript(video_url):
         return {
             'video_id': video_id,
             'transcript': transcript_text,
-            'success': True
+            'success': True,
+            'method': 'transcript_api'
         }
 
     except Exception as e:
