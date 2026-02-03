@@ -11,6 +11,7 @@ import re
 import os
 import tempfile
 import glob
+import base64
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -141,10 +142,19 @@ def _parse_subtitle_file(filepath):
         return None
 
 
+def _ytdlp_cookiefile_opts():
+    """If YOUTUBE_COOKIES_FILE is set and exists, return opts dict with cookiefile for yt-dlp."""
+    path = os.getenv('YOUTUBE_COOKIES_FILE', '').strip()
+    if path and os.path.isfile(path):
+        return {'cookiefile': path}
+    return {}
+
+
 def get_transcript_via_ytdlp(video_url):
     """
     Get transcript using yt-dlp (downloads captions / auto-subs).
     Alternative to youtube_transcript_api; often works when the latter is blocked.
+    Set YOUTUBE_COOKIES_FILE to a cookies file path if YouTube blocks (e.g. on Render).
     """
     try:
         import yt_dlp
@@ -163,6 +173,7 @@ def get_transcript_via_ytdlp(video_url):
             'outtmpl': outtmpl,
             'quiet': True,
             'no_warnings': True,
+            **_ytdlp_cookiefile_opts(),
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -208,6 +219,7 @@ def get_transcript_via_assemblyai(video_url):
             'outtmpl': outpath,
             'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '128'}],
             'quiet': True,
+            **_ytdlp_cookiefile_opts(),
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:

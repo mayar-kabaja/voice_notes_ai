@@ -144,7 +144,7 @@ The app is set up for [Render](https://render.com) via `render.yaml`:
 1. **Connect** your repo to Render and create a Web Service from the repo (Render can use `render.yaml` automatically).
 2. **Environment variables**: In the Render dashboard, set `ASSEMBLYAI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, and `SECRET_KEY`. Optionally set `YOUTUBE_API_KEY` for YouTube Data API.
 3. **Database**: Attach a PostgreSQL database in Render if you use one; Render will set `DATABASE_URL`.
-4. **YouTube on Render**: `yt-dlp` is installed from `requirements.txt`. YouTube caption extraction works out of the box. The Gunicorn timeout is 300 seconds so YouTube processing (yt-dlp or transcript API) can finish. The AssemblyAI fallback (download audio + transcribe for videos with no captions) requires ffmpeg, which is not in Render’s default Python image—caption-based YouTube will work without it.
+4. **YouTube on Render**: `yt-dlp` is installed from `requirements.txt`. If YouTube blocks cloud IPs ("Sign in to confirm you're not a bot"), add optional cookies: export YouTube cookies (Netscape format, e.g. "Get cookies.txt LOCALLY" extension); in Render Environment set `YOUTUBE_COOKIES_TXT` to the full cookie file contents and `YOUTUBE_COOKIES_FILE` to `youtube_cookies.txt`. Use start command `./start.sh` so Gunicorn timeout is 300s.
 
 ---
 

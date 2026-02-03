@@ -2,7 +2,10 @@ services:
   - type: web
     name: noteflow-ai
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    # If YOUTUBE_COOKIES_TXT env var is set (cookie file contents), write to file for yt-dlp
+    buildCommand: |
+      pip install -r requirements.txt
+      if [ -n "$YOUTUBE_COOKIES_TXT" ]; then echo "$YOUTUBE_COOKIES_TXT" > youtube_cookies.txt; fi
     startCommand: ./start.sh
     envVars:
       - key: SECRET_KEY
@@ -15,6 +18,13 @@ services:
         sync: false
       # Optional: YouTube Data API for captions (captions.download needs OAuth; list works with key)
       - key: YOUTUBE_API_KEY
+        sync: false
+      # Optional: when YouTube blocks cloud IPs ("Sign in to confirm you're not a bot") — paste
+      # Netscape-format cookie file contents here; build writes to youtube_cookies.txt
+      - key: YOUTUBE_COOKIES_TXT
+        sync: false
+      # Path to cookies file (set to youtube_cookies.txt if using YOUTUBE_COOKIES_TXT above)
+      - key: YOUTUBE_COOKIES_FILE
         sync: false
     disk:
       name: noteflow-data
