@@ -281,6 +281,7 @@ def get_youtube_transcript(video_url):
         transcript_data = None
         last_error = None
         max_retries = 3
+        transcripts_disabled = False  # When True, skip more transcript_api retries and try yt-dlp/AssemblyAI
 
         # Try multiple times with delays
         for retry in range(max_retries):
@@ -304,9 +305,9 @@ def get_youtube_transcript(video_url):
                         transcript_data = transcript_list
                         break
                 except TranscriptsDisabled:
-                    # Library can raise this when captions are disabled OR when access is restricted
-                    error_msg = _transcripts_disabled_message(video_id)
-                    return {'success': False, 'error': error_msg}
+                    # Often raised from cloud IPs (e.g. Render) even when captions exist — try yt-dlp/AssemblyAI
+                    transcripts_disabled = True
+                    break
                 except NoTranscriptFound as e:
                     last_error = e
                     continue
@@ -322,6 +323,8 @@ def get_youtube_transcript(video_url):
 
             if transcript_data:
                 break
+            if transcripts_disabled:
+                break  # Skip retries and try yt-dlp / AssemblyAI
 
             # Wait before retrying (exponential backoff)
             if retry < max_retries - 1:
@@ -381,9 +384,10 @@ def get_youtube_transcript(video_url):
             if not transcript_data:
                 err = "⚠️ Unable to access captions for this video.\n\n"
                 err += "This could be because:\n"
-                err += "• YouTube is blocking automated access\n"
+                err += "• YouTube is blocking automated access (common on cloud servers)\n"
                 err += "• The video has no captions\n"
-                err += "• The video is private or region-restricted"
+                err += "• The video is private or region-restricted\n\n"
+                err += "Try uploading the video file instead, or try again later."
                 if available_captions_note:
                     err += available_captions_note
                 return {'success': False, 'error': err}
