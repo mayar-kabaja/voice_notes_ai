@@ -2,6 +2,14 @@
 Main Flask application for NoteFlow AI
 """
 import os
+import sys
+
+# Allow app to find packages in vendor/ (e.g. yt-dlp when installed with pip install --target vendor)
+_here = os.path.dirname(os.path.abspath(__file__))
+_vendor = os.path.join(_here, 'vendor')
+if os.path.isdir(_vendor):
+    sys.path.insert(0, _vendor)
+
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_migrate import Migrate
@@ -327,7 +335,10 @@ def process_video():
 
             result = get_youtube_transcript(video_url)
             if not result['success']:
-                return jsonify({'success': False, 'message': f"Failed to get transcript: {result.get('error', 'Unknown error')}"}), 400
+                err = result.get('error', 'Unknown error')
+                # Use error as-is when it's already user-friendly (e.g. starts with ⚠️)
+                message = err if err.strip().startswith('⚠️') else f"Failed to get transcript: {err}"
+                return jsonify({'success': False, 'message': message}), 400
 
             transcript = result['transcript']
             video_id = result['video_id']

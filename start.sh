@@ -22,4 +22,5 @@ echo "🌟 Starting Gunicorn server..."
 echo "========================================"
 
 # Start the application
-exec gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+# Timeout 300s: YouTube (yt-dlp/AssemblyAI) and long uploads can take a while
+exec gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 300

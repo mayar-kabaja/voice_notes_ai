@@ -9,6 +9,8 @@ except ImportError:
     VideoUnavailable = Exception
 import re
 import os
+import tempfile
+import glob
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -93,6 +95,138 @@ def get_transcript_via_youtube_api(video_id):
         print(f"YouTube Data API error: {e}")
         return None
 
+
+def _transcripts_disabled_message(video_id):
+    """
+    Return a user-friendly message for TranscriptsDisabled.
+    Tries list_transcripts() to distinguish "no captions" vs "access restricted".
+    """
+    try:
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        available = list(transcript_list)
+        if available:
+            # Captions exist but we couldn't fetch (e.g. geo/access restriction)
+            return (
+                "⚠️ Transcripts aren't available for this video.\n\n"
+                "Captions may exist but access is restricted (e.g. by region or by YouTube). "
+                "Try another video or use a video file upload instead."
+            )
+    except Exception:
+        pass
+    return (
+        "⚠️ This video has captions/transcripts disabled.\n\n"
+        "The uploader has not made subtitles available, or they are not available in a supported format. "
+        "Try another video or upload the video file to transcribe it."
+    )
+
+
+def _parse_subtitle_file(filepath):
+    """Extract plain text from VTT or SRT subtitle file."""
+    try:
+        with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
+            content = f.read()
+        # Strip XML-style tags (e.g. <00:00:00.199>, <c>...</c>) - keep inner text
+        content = re.sub(r'<[^>]+>', '', content)
+        # Strip VTT/SRT timing lines and numbers; keep dialogue lines
+        content = re.sub(r'\d{2}:\d{2}:\d{2}[.,]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[.,]\d{3}.*', '', content)
+        content = re.sub(r'^\d+\s*$', '', content, flags=re.MULTILINE)
+        content = re.sub(r'^WEBVTT.*$', '', content, flags=re.MULTILINE)
+        # Strip yt-dlp metadata lines (e.g. "Kind: captions Language: en")
+        content = re.sub(r'Kind:\s*captions\s*', '', content, flags=re.IGNORECASE)
+        content = re.sub(r'Language:\s*[\w-]+\s*', '', content, flags=re.IGNORECASE)
+        # Normalize whitespace
+        content = re.sub(r'\s+', ' ', content).strip()
+        return content if content else None
+    except Exception:
+        return None
+
+
+def get_transcript_via_ytdlp(video_url):
+    """
+    Get transcript using yt-dlp (downloads captions / auto-subs).
+    Alternative to youtube_transcript_api; often works when the latter is blocked.
+    """
+    try:
+        import yt_dlp
+    except ImportError:
+        return None
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Use a simple base name so subtitle files are e.g. out.en.vtt, out.a.en.vtt
+        outtmpl = os.path.join(tmpdir, 'out')
+        ydl_opts = {
+            'skip_download': True,
+            'writesubtitles': True,
+            'writeautomaticsub': True,
+            'subtitleslangs': ['en', 'en-US', 'en-GB', 'a.en'],
+            'subtitlesformat': 'vtt/srt',  # Prefer parseable formats (avoid json3)
+            'outtmpl': outtmpl,
+            'quiet': True,
+            'no_warnings': True,
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([video_url])
+        except Exception as e:
+            print(f"yt-dlp subtitle download failed: {e}")
+            return None
+
+        # Find any subtitle file (yt-dlp may name e.g. out.en.vtt, out.a.en.vtt, or out.en.srt)
+        best_text = None
+        best_len = 0
+        for root, _dirs, files in os.walk(tmpdir):
+            for name in files:
+                path = os.path.join(root, name)
+                if not os.path.isfile(path):
+                    continue
+                if not (path.endswith(('.vtt', '.srt', '.sbv')) or '.en' in name or '.a.en' in name):
+                    continue
+                text = _parse_subtitle_file(path)
+                if text and len(text.strip()) > best_len:
+                    best_text = text.strip()
+                    best_len = len(best_text)
+        if best_text and best_len >= 10:
+            return best_text
+    return None
+
+
+def get_transcript_via_assemblyai(video_url):
+    """
+    Fallback: download audio with yt-dlp and transcribe with AssemblyAI.
+    Works for videos with no captions (uses your existing AssemblyAI key).
+    """
+    try:
+        import yt_dlp
+        from services.transcription import transcribe_audio
+    except ImportError:
+        return None
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        outpath = os.path.join(tmpdir, 'audio.%(ext)s')
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': outpath,
+            'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '128'}],
+            'quiet': True,
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([video_url])
+        except Exception as e:
+            print(f"yt-dlp audio download failed: {e}")
+            return None
+
+        audio_files = glob.glob(os.path.join(tmpdir, 'audio.*'))
+        if not audio_files:
+            return None
+        audio_path = audio_files[0]
+        try:
+            return transcribe_audio(audio_path)
+        except Exception as e:
+            print(f"AssemblyAI transcription failed: {e}")
+            return None
+
+
 def get_youtube_transcript(video_url):
     """
     Get transcript from YouTube video URL using hybrid approach:
@@ -116,6 +250,16 @@ def get_youtube_transcript(video_url):
                 'transcript': transcript_text,
                 'success': True,
                 'method': 'youtube_data_api'
+            }
+
+        # Try yt-dlp early (often works when transcript_api is rate-limited on Render/cloud)
+        transcript_text = get_transcript_via_ytdlp(video_url)
+        if transcript_text:
+            return {
+                'video_id': video_id,
+                'transcript': transcript_text,
+                'success': True,
+                'method': 'ytdlp'
             }
 
         # Try multiple language options (including auto-generated)
@@ -142,7 +286,7 @@ def get_youtube_transcript(video_url):
         for retry in range(max_retries):
             for languages in languages_to_try:
                 try:
-                    # Try with cookies first for better compatibility
+                    # Try with explicit options first, then fallback to simple call
                     try:
                         transcript_list = YouTubeTranscriptApi.get_transcript(
                             video_id,
@@ -152,16 +296,17 @@ def get_youtube_transcript(video_url):
                         )
                         transcript_data = transcript_list
                         break
-                    except:
-                        # Fallback to simple method
+                    except (TranscriptsDisabled, VideoUnavailable):
+                        raise  # Let outer handler deal with these
+                    except Exception:
+                        # Fallback to simple method (e.g. connection/format issues)
                         transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=languages)
                         transcript_data = transcript_list
                         break
                 except TranscriptsDisabled:
-                    return {
-                        'success': False,
-                        'error': "⚠️ This video has captions/transcripts disabled."
-                    }
+                    # Library can raise this when captions are disabled OR when access is restricted
+                    error_msg = _transcripts_disabled_message(video_id)
+                    return {'success': False, 'error': error_msg}
                 except NoTranscriptFound as e:
                     last_error = e
                     continue
@@ -182,6 +327,7 @@ def get_youtube_transcript(video_url):
             if retry < max_retries - 1:
                 time.sleep(2 ** retry)
 
+        available_captions_note = None
         if not transcript_data:
             # Try to list available transcripts and translate to English if needed
             try:
@@ -207,27 +353,40 @@ def get_youtube_transcript(video_url):
                         print(f"Translation failed: {translate_error}")
                         # Continue to error handling below
 
-                # If translation failed or no translatable transcript found
-                if not transcript_data and available:
-                    return {
-                        'success': False,
-                        'error': f"⚠️ Could not access transcripts for this video.\n\n"
-                                 f"Available captions:\n" + "\n".join(available[:5]) +
-                                 f"\n\nYouTube is blocking automated access to this video's captions."
-                    }
+                if available:
+                    available_captions_note = "\n\nAvailable captions:\n" + "\n".join(available[:5])
             except Exception as list_error:
                 print(f"Error listing transcripts: {list_error}")
                 pass
 
+            # Alternative services: yt-dlp (captions) then AssemblyAI (download audio + transcribe)
             if not transcript_data:
-                return {
-                    'success': False,
-                    'error': "⚠️ Unable to access captions for this video.\n\n"
-                             "This could be because:\n"
-                             "• YouTube is blocking automated access\n"
-                             "• The video has no captions\n"
-                             "• The video is private or region-restricted"
-                }
+                transcript_text_alt = get_transcript_via_ytdlp(video_url)
+                if transcript_text_alt:
+                    return {
+                        'video_id': video_id,
+                        'transcript': transcript_text_alt,
+                        'success': True,
+                        'method': 'ytdlp'
+                    }
+                transcript_text_alt = get_transcript_via_assemblyai(video_url)
+                if transcript_text_alt:
+                    return {
+                        'video_id': video_id,
+                        'transcript': transcript_text_alt,
+                        'success': True,
+                        'method': 'assemblyai'
+                    }
+
+            if not transcript_data:
+                err = "⚠️ Unable to access captions for this video.\n\n"
+                err += "This could be because:\n"
+                err += "• YouTube is blocking automated access\n"
+                err += "• The video has no captions\n"
+                err += "• The video is private or region-restricted"
+                if available_captions_note:
+                    err += available_captions_note
+                return {'success': False, 'error': err}
 
         # Combine all text - handle both dict and object formats
         transcript_text = " ".join([
