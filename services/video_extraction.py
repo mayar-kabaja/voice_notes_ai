@@ -143,10 +143,22 @@ def _parse_subtitle_file(filepath):
 
 
 def _ytdlp_cookiefile_opts():
-    """If YOUTUBE_COOKIES_FILE is set and exists, return opts dict with cookiefile for yt-dlp."""
+    """If YOUTUBE_COOKIES_FILE is set and exists, or YOUTUBE_COOKIES_TXT is set, return opts dict with cookiefile for yt-dlp."""
     path = os.getenv('YOUTUBE_COOKIES_FILE', '').strip()
     if path and os.path.isfile(path):
         return {'cookiefile': path}
+    # Fallback: write YOUTUBE_COOKIES_TXT to a file at runtime (preserves newlines; build step may not)
+    txt = os.getenv('YOUTUBE_COOKIES_TXT', '').strip()
+    if txt:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cookie_path = os.path.join(project_root, 'youtube_cookies.txt')
+        try:
+            with open(cookie_path, 'w', encoding='utf-8') as f:
+                f.write(txt)
+            if os.path.isfile(cookie_path):
+                return {'cookiefile': cookie_path}
+        except Exception:
+            pass
     return {}
 
 

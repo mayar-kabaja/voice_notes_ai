@@ -5,7 +5,7 @@ services:
     # If YOUTUBE_COOKIES_TXT env var is set (cookie file contents), write to file for yt-dlp
     buildCommand: |
       pip install -r requirements.txt
-      if [ -n "$YOUTUBE_COOKIES_TXT" ]; then echo "$YOUTUBE_COOKIES_TXT" > youtube_cookies.txt; fi
+      if [ -n "$YOUTUBE_COOKIES_TXT" ]; then printf '%s' "$YOUTUBE_COOKIES_TXT" > youtube_cookies.txt; fi
     startCommand: ./start.sh
     envVars:
       - key: SECRET_KEY
