@@ -1018,21 +1018,39 @@ inlineStartRecordBtn.addEventListener('click', async () => {
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
+            // Safari/iOS can send empty chunks - only push real data
+            if (event.data && event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
         };
 
         mediaRecorder.onstop = () => {
             const actualMimeType = mediaRecorder.mimeType || mimeType;
             recordedBlob = new Blob(audioChunks, { type: actualMimeType });
 
+            stream.getTracks().forEach(track => track.stop());
+
+            if (recordedBlob.size === 0) {
+                recordedBlob = null;
+                showToast('Recording failed', 'No audio was captured. Try again and speak closer to the mic.', 'error');
+                if (inlineRecordingLabel) inlineRecordingLabel.style.display = '';
+                if (inlineRecordingTimer) inlineRecordingTimer.style.display = 'none';
+                inlineStartRecordBtn.style.display = 'flex';
+                inlineStopRecordBtn.style.display = 'none';
+                return;
+            }
+
             const audioUrl = URL.createObjectURL(recordedBlob);
             inlineAudioPlayback.src = audioUrl;
-
+            inlineAudioPlayback.onerror = () => {
+                showToast('Preview unavailable', 'Tap Use to transcribe anyway, or Discard to record again.', 'info');
+                inlineAudioPlayback.onerror = null;
+            };
             inlineAudioPreview.style.display = 'flex';
-            stream.getTracks().forEach(track => track.stop());
         };
 
-        mediaRecorder.start();
+        // Request data every 1s so Safari/iOS gets chunks (without this, stop can yield empty blob)
+        mediaRecorder.start(1000);
 
         inlineStartRecordBtn.style.display = 'none';
         inlineStopRecordBtn.style.display = 'flex';
@@ -1070,6 +1088,10 @@ inlineStopRecordBtn.addEventListener('click', () => {
 
 inlineUseRecordingBtn.addEventListener('click', () => {
     playSound('click'); // Play click sound
+    if (!recordedBlob || recordedBlob.size === 0) {
+        showToast('No recording', 'Record again and wait for the preview before using it.', 'error');
+        return;
+    }
     inlineRecording.style.display = 'none';
     chatTextInput.style.display = 'flex';
 
