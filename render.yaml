@@ -2,10 +2,15 @@ services:
   - type: web
     name: noteflow-ai
     runtime: python
-    # If YOUTUBE_COOKIES_TXT env var is set (cookie file contents), write to file for yt-dlp
+    # Install deps, optional cookies file, and Node.js so yt-dlp can solve YouTube JS challenges
     buildCommand: |
       pip install -r requirements.txt
       if [ -n "$YOUTUBE_COOKIES_TXT" ]; then printf '%s' "$YOUTUBE_COOKIES_TXT" > youtube_cookies.txt; fi
+      if ! command -v node >/dev/null 2>&1; then
+        curl -fsSL https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz -o /tmp/node.tar.xz
+        tar xJf /tmp/node.tar.xz -C /tmp
+        mv /tmp/node-v20.10.0-linux-x64 node
+      fi
     startCommand: ./start.sh
     envVars:
       - key: SECRET_KEY

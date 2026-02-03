@@ -122,10 +122,28 @@ def _transcripts_disabled_message(video_id):
 
 
 def _parse_subtitle_file(filepath):
-    """Extract plain text from VTT or SRT subtitle file."""
+    """Extract plain text from VTT, SRT, or JSON3 subtitle file."""
     try:
         with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
             content = f.read()
+        # JSON3 (yt-dlp "best" format): array of objects with "text" or "content"
+        stripped = content.strip()
+        if stripped.startswith('['):
+            try:
+                import json
+                data = json.loads(content)
+                if isinstance(data, list):
+                    parts = []
+                    for item in data:
+                        if isinstance(item, dict):
+                            text = item.get('text') or item.get('content') or item.get('caption', '')
+                            if text:
+                                parts.append(text)
+                        elif isinstance(item, str):
+                            parts.append(item)
+                    return ' '.join(parts) if parts else None
+            except Exception:
+                pass
         # Strip XML-style tags (e.g. <00:00:00.199>, <c>...</c>) - keep inner text
         content = re.sub(r'<[^>]+>', '', content)
         # Strip VTT/SRT timing lines and numbers; keep dialogue lines
@@ -181,7 +199,7 @@ def get_transcript_via_ytdlp(video_url):
             'writesubtitles': True,
             'writeautomaticsub': True,
             'subtitleslangs': ['en', 'en-US', 'en-GB', 'a.en'],
-            'subtitlesformat': 'vtt/srt',  # Prefer parseable formats (avoid json3)
+            'subtitlesformat': 'vtt/srt/best',  # Prefer vtt/srt; accept best (e.g. json3) if that's all YouTube offers
             'outtmpl': outtmpl,
             'quiet': True,
             'no_warnings': True,
@@ -202,7 +220,7 @@ def get_transcript_via_ytdlp(video_url):
                 path = os.path.join(root, name)
                 if not os.path.isfile(path):
                     continue
-                if not (path.endswith(('.vtt', '.srt', '.sbv')) or '.en' in name or '.a.en' in name):
+                if not (path.endswith(('.vtt', '.srt', '.sbv', '.json', '.json3')) or '.en' in name or '.a.en' in name):
                     continue
                 text = _parse_subtitle_file(path)
                 if text and len(text.strip()) > best_len:

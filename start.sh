@@ -1,6 +1,9 @@
 #!/bin/bash
 # Startup script for Render - Runs migrations then starts the app
 
+# So yt-dlp can solve YouTube JS challenges (needed when "Only images are available" / "Requested format is not available")
+if [ -d "./node/bin" ]; then export PATH="$PWD/node/bin:$PATH"; fi
+
 echo "========================================"
 echo "🚀 Starting NoteFlow AI on Render"
 echo "========================================"
